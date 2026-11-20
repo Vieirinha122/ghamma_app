@@ -226,13 +226,19 @@ function Evolucao() {
             className="absolute left-[15%] right-[15%] top-[38px] hidden h-1 rounded-full bg-[linear-gradient(90deg,#00c7d0,#c331d2,#ffffff)] opacity-70 md:block"
             aria-hidden="true"
           />
-          <div
-            className="absolute bottom-7 left-7 top-7 w-1 rounded-full bg-[linear-gradient(180deg,#00c7d0,#c331d2,#ffffff)] opacity-70 md:hidden"
-            aria-hidden="true"
-          />
           <div className="grid grid-cols-1 gap-9 md:grid-cols-3 md:gap-10">
-            {etapas.map((etapa) => (
+            {etapas.map((etapa, indice) => (
               <div key={etapa.numero} className="group relative grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-4 text-left md:flex md:flex-col md:items-center md:gap-0 md:text-center">
+                {indice < etapas.length - 1 ? (
+                  <div
+                    className={`absolute -bottom-16 left-[26px] top-7 z-0 w-1 opacity-70 md:hidden ${
+                      indice === 0
+                        ? 'bg-[linear-gradient(180deg,#00c7d0,#c331d2)]'
+                        : 'bg-[linear-gradient(180deg,#c331d2,#ffffff)]'
+                    }`}
+                    aria-hidden="true"
+                  />
+                ) : null}
                 <div
                   className={`z-10 flex h-14 w-14 items-center justify-center rounded-full font-display text-xl font-black transition-transform group-hover:scale-105 md:mb-6 md:h-20 md:w-20 md:text-2xl md:group-hover:scale-110 ${etapa.circulo} ${
                     etapa.numero === '1'
@@ -430,8 +436,8 @@ function Rodape() {
   return (
     <footer className="border-t border-purple-950 bg-[#05021a] py-16 text-gray-400">
       <div className="mx-auto w-[min(calc(100%-40px),1180px)]">
-        <div className="mb-12 grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-[1.1fr_0.9fr_1.4fr]">
-          <div>
+        <div className="mb-12 grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-[1.1fr_0.9fr_1.4fr] lg:gap-12">
+          <div className="col-span-2 lg:col-span-1">
             <img src="/ghamma-logo.webp" alt="Ghamma Vôlei" width="1212" height="1073" loading="lazy" className="mb-4 w-20" />
             <p className="text-sm font-medium leading-relaxed">
               CT Ghamma Volley · A rede nos une.
@@ -439,7 +445,7 @@ function Rodape() {
           </div>
           <div>
             <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-white">Navegação</h4>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2 text-xs sm:text-sm">
               <li><a className="transition-colors hover:text-lp-cyan" href="#metodologia">Metodologia de treino</a></li>
               <li><a className="transition-colors hover:text-lp-cyan" href="/galeria">Galeria de fotos</a></li>
               <li><a className="transition-colors hover:text-lp-cyan" href="/atletas">Quadro de atletas</a></li>
@@ -448,7 +454,7 @@ function Rodape() {
           </div>
           <div>
             <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-white">Conexões</h4>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2 break-words text-xs sm:text-sm">
               <li><a className="transition-colors hover:text-lp-magenta" href="https://www.instagram.com/ctghammavolley/" target="_blank" rel="noopener noreferrer">Instagram @ctghammavolley</a></li>
               <li><a className="transition-colors hover:text-lp-cyan" href="#contato">WhatsApp oficial do CT</a></li>
               <li>
