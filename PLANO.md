@@ -13,17 +13,17 @@
 - [x] Deploy preparado: rewrites `/api/*` → função + SPA, `vercel.json`, env vars listadas
 - [x] Git inicializado, commit + push em andamento (meu lado: comandos bloqueados por permissão)
 
-## Etapa 2 — Schema, migration e seed *(próxima)*
+## Etapa 2 — Schema, migration e seed ✅ *(concluída em 2026-11-20)*
 
-- [ ] Models no Prisma:
+- [x] Models no Prisma:
   - `Usuario` (email, hash de senha, papel) — base do login multi-usuário
   - `Atleta` (colunas-chave: nome, idade, sexo, categoria, posição, equipe, telefone, dor atual + `respostas` JSONB com as 65 respostas)
   - Tabela de refresh tokens (rotatividade, hash do token)
-- [ ] `prisma migrate` contra o Neon
-- [ ] Seed: converter o xlsx do Google Forms (32 respostas × 65 colunas) em JSON e popular `Atleta`
-- [ ] Admin inicial criado via env (`ADMIN_EMAIL`/`ADMIN_PASSWORD`, só no seed local)
+- [x] `prisma migrate` contra o Neon (migration `20261120145837_init`)
+- [x] Seed: xlsx convertido (`scripts/converter-xlsx.py` → `data-seed/`, gitignored) e 32 atletas importados (`scripts/seed.ts`, matching por aliases do formSchema)
+- [x] Admin inicial criado via env (`ADMIN_EMAIL`/`ADMIN_PASSWORD`, só no seed local)
 
-## Etapa 3 — Auth (login multi-usuário)
+## Etapa 3 — Auth (login multi-usuário) *(próxima)*
 
 - [ ] `modules/auth/` no back: `auth.routes.ts`, `auth.controller.ts`, `service.ts`, `repository.ts`
 - [ ] `POST /api/auth/login`, `/api/auth/refresh`, `/api/auth/logout`

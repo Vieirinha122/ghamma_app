@@ -23,6 +23,9 @@ obsidian-vault-ctgv
 # Código gerado pelo Prisma (regenera com npm run postinstall)
 generated
 
+# Dados clínicos para o seed — NUNCA versionar (LGPD/dado sensível)
+data-seed
+
 # Skills sincronizadas pelo CLI (regeneram com prisma skills sync)
 .claude
 .windsurf

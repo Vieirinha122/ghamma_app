@@ -8,6 +8,7 @@
     "dev:api": "tsx watch api/index.ts",
     "build": "tsc -b && vite build",
     "typecheck:server": "tsc -p tsconfig.server.json",
+    "seed": "tsx scripts/seed.ts",
     "lint": "eslint .",
     "preview": "vite preview",
     "postinstall": "prisma generate"

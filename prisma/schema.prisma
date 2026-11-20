@@ -1,5 +1,6 @@
-// Schema do banco — etapa 1 é só a base (datasource + generator).
-// Modelos (atleta, usuario) entram na etapa 2.
+// Schema do banco — dado clínico: cuidado redobrado com campos sensíveis e auditoria.
+// Convenção de nomenclatura: modelos/campos novos podem ser em português (ver vault 05-Convencoes).
+
 datasource db {
   provider = "postgresql"
 }
@@ -7,4 +8,55 @@ datasource db {
 generator client {
   provider = "prisma-client"
   output   = "../generated"
+}
+
+// Usuário do painel (admin/fisioterapeuta). Senha só em hash (bcrypt).
+model Usuario {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  senhaHash String
+  // Papel para RBAC futuro (ADMIN | VISUALIZADOR); hoje só ADMIN é usado.
+  papel     String   @default("ADMIN")
+  criadoEm  DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  sessoes SessaoRefresh[]
+}
+
+// Token de refresh rotativo: guardamos só o HASH — se o banco vazar,
+// o token bruto não serve para logar.
+model SessaoRefresh {
+  id        String   @id @default(uuid())
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId String
+  tokenHash String   @unique
+  expiraEm  DateTime
+  revogadoEm DateTime?
+  criadoEm  DateTime @default(now())
+
+  @@index([usuarioId])
+}
+
+// Atleta importado da ficha de anamnese (Google Forms).
+// Colunas-chave tipadas = listagem/busca/ordenação rápidas.
+// `respostas` (JSONB) guarda o restante das perguntas: o Forms pode mudar
+// sem exigir migration, e a ficha renderiza do formSchema do front.
+model Atleta {
+  id          String   @id @default(uuid())
+  nomeCompleto String
+  idade       Int?
+  sexo        String?
+  telefone    String?
+  email       String?
+  equipeAtual String?
+  categoriaAtual String?
+  posicao     String?
+  temDorAtual Boolean?
+  respostas   Json     @default("{}")
+  respostaRecebidaEm DateTime?
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@index([nomeCompleto])
+  @@index([categoriaAtual])
 }

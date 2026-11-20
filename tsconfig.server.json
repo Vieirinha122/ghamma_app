@@ -12,5 +12,5 @@
     "types": ["node"],
     "lib": ["ES2022"]
   },
-  "include": ["api/**/*.ts", "src/server/**/*.ts", "prisma.config.ts", "generated/**/*.ts"]
+  "include": ["api/**/*.ts", "src/server/**/*.ts", "scripts/**/*.ts", "prisma.config.ts", "generated/**/*.ts"]
 }

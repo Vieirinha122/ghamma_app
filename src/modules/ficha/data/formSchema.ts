@@ -373,7 +373,7 @@ export const athleteFields: FieldDefinition[] = [
     section: 'mainComplaint',
     label: 'Tempo afastado dos treinamentos',
     type: 'textarea',
-    aliases: ['ficou afastadoa dos treinamentos por causa do problema se sim por quanto tempo'],
+    aliases: ['ficou afastado a dos treinamentos por causa do problema se sim por quanto tempo'],
   },
   {
     key: 'affectsPerformance',
