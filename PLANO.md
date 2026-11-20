@@ -31,12 +31,19 @@
 - [x] Rate limit no login (5/15 min por IP); middleware `requireAuth` pronto para proteger rotas
 - [x] Validação Zod de body/login nos contratos (`src/contracts/schemas/auth.ts`)
 
-## Etapa 4 — Endpoint de atletas *(próxima)*
+## Etapa 4 — Endpoints de atletas + seção pública do site ✅ *(concluída em 2026-11-20, aguardando teste)*
 
-- [ ] `modules/atletas/` no back: routes/controller/service/repository
-- [ ] `GET /api/atletas?q=busca` → ordenação A-Z no banco (`orderBy` nome), busca por nome/categoria/posição
-- [ ] `GET /api/atletas/:id` → ficha completa (JSONB)
-- [ ] Resposta enxuta na listagem (só colunas-chave), ficha completa só no detalhe
+- [x] `modules/atletas/` no back: `atletas.routes.ts`, `atletas.controller.ts`, `service.ts`, `repository.ts`
+- [x] `GET /api/atletas?q=&posicao=` (protegido) → listagem admin, A-Z no banco, busca em nome/categoria/posição
+- [x] `GET /api/atletas/:id` (protegido) → ficha completa (JSONB)
+- [x] `GET /api/site/atletas?q=&posicao=` (público) → seção de atletas na landing: só `{ id, nome, idade, posição }` de quem tem `exibeNoSite`
+- [x] `PATCH /api/atletas/:id/exibicao` (protegido) → curadoria do admin para o site
+- [x] Coluna `exibeNoSite` + migration com backfill (23 de 32 marcados — equipes Ghamma/CTGV)
+- [x] Seed marca `exibeNoSite` na criação e nunca desmarca curadoria manual
+- [x] Contratos em `src/contracts/schemas/atletas.ts` (consulta, exibição, tipos de resposta)
+
+> [!info] Para a etapa do front
+> Criar componente da **seção de atletas do Ghamma Vôlei** na landing: consome `GET /api/site/atletas` (público), com filtro de posição (dropdown com as posições vindas da própria lista) + campo de busca, card com nome/idade/posição.
 
 ## Etapa 5 — Front: autenticação + TanStack Query
 

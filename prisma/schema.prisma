@@ -54,6 +54,8 @@ model Atleta {
   temDorAtual Boolean?
   respostas   Json     @default("{}")
   respostaRecebidaEm DateTime?
+  // Curadoria do admin: só quem está marcado aparece na seção pública do site
+  exibeNoSite Boolean  @default(false)
   criadoEm    DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 

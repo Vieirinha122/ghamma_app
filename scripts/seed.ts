@@ -126,7 +126,13 @@ async function main() {
       const temDorAtual =
         valores.hasCurrentPain === 'Sim' ? true : valores.hasCurrentPain === 'Não' ? false : null
 
-      const dadosAtleta = {
+      // atleta do Ghamma/CTGV = aparece na seção pública do site.
+      // Regra de importação: só na CRIAÇÃO — o seed nunca desmarca
+      // uma curadoria feita à mão pelo admin depois.
+      const equipeNormalizada = normalizarTexto(valores.currentTeam ?? '')
+      const exibeNoSite = equipeNormalizada.includes('gh')
+
+      const dadosAtualizacao = {
         nomeCompleto,
         idade: Number.isFinite(idade) ? idade : null,
         sexo: valores.gender || null,
@@ -143,10 +149,10 @@ async function main() {
       const existente = await prisma.atleta.findFirst({ where: { nomeCompleto } })
 
       if (existente) {
-        await prisma.atleta.update({ where: { id: existente.id }, data: dadosAtleta })
+        await prisma.atleta.update({ where: { id: existente.id }, data: dadosAtualizacao })
         atualizados += 1
       } else {
-        await prisma.atleta.create({ data: dadosAtleta })
+        await prisma.atleta.create({ data: { ...dadosAtualizacao, exibeNoSite } })
         criados += 1
       }
     }

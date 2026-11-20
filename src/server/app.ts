@@ -9,6 +9,7 @@ import cookieParser from 'cookie-parser'
 import { env } from './env'
 import { healthRouter } from './modules/health/health.routes'
 import { authRouter } from './modules/auth/auth.routes'
+import { atletasRouter, atletasPublicosRouter } from './modules/atletas/atletas.routes'
 import { ApiErro } from './errors/api-error'
 
 // CORS com whitelist explícita: só o front conhecido pode chamar (nunca '*').
@@ -31,11 +32,15 @@ export function criarApp() {
   // Necessário para ler o cookie do refresh token nas rotas de auth
   app.use(cookieParser())
 
-  // Router principal (novos grupos entram aqui: /atletas...)
+  // Router principal (novos grupos entram aqui: /consultas...)
   app.use('/api', healthRouter)
   app.use('/', healthRouter)
   app.use('/api', authRouter)
   app.use('/', authRouter)
+  app.use('/api', atletasRouter)
+  app.use('/', atletasRouter)
+  app.use('/api', atletasPublicosRouter)
+  app.use('/', atletasPublicosRouter)
 
   // 404 padronizado para tudo que não casou
   app.use((_req, res) => {
