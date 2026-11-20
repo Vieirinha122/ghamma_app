@@ -23,15 +23,15 @@
 - [x] Seed: xlsx convertido (`scripts/converter-xlsx.py` → `data-seed/`, gitignored) e 32 atletas importados (`scripts/seed.ts`, matching por aliases do formSchema)
 - [x] Admin inicial criado via env (`ADMIN_EMAIL`/`ADMIN_PASSWORD`, só no seed local)
 
-## Etapa 3 — Auth (login multi-usuário) *(próxima)*
+## Etapa 3 — Auth (login multi-usuário) ✅ *(concluída em 2026-11-20)*
 
-- [ ] `modules/auth/` no back: `auth.routes.ts`, `auth.controller.ts`, `service.ts`, `repository.ts`
-- [ ] `POST /api/auth/login`, `/api/auth/refresh`, `/api/auth/logout`
-- [ ] bcrypt custo 12; access token JWT curto em memória; refresh em cookie `HttpOnly Secure SameSite=strict` com rotação
-- [ ] Rate limit no login; middleware `requireAuth` para proteger `/api/atletas`
-- [ ] Validação Zod de body/login nos contratos (`src/contracts/`)
+- [x] `modules/auth/` no back: `auth.routes.ts`, `auth.controller.ts`, `service.ts`, `repository.ts`
+- [x] `POST /api/auth/login`, `/api/auth/refresh`, `/api/auth/logout`
+- [x] bcrypt custo 12; access token JWT curto em memória; refresh em cookie `HttpOnly Secure SameSite=strict` com rotação
+- [x] Rate limit no login (5/15 min por IP); middleware `requireAuth` pronto para proteger rotas
+- [x] Validação Zod de body/login nos contratos (`src/contracts/schemas/auth.ts`)
 
-## Etapa 4 — Endpoint de atletas
+## Etapa 4 — Endpoint de atletas *(próxima)*
 
 - [ ] `modules/atletas/` no back: routes/controller/service/repository
 - [ ] `GET /api/atletas?q=busca` → ordenação A-Z no banco (`orderBy` nome), busca por nome/categoria/posição
