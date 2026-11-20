@@ -13,6 +13,7 @@ export const atletasRouter = Router()
 atletasRouter.get('/atletas', requireAuth, atletasController.listar)
 atletasRouter.get('/atletas/:id', requireAuth, atletasController.detalhar)
 atletasRouter.patch('/atletas/:id/exibicao', requireAuth, atletasController.atualizarExibicao)
+atletasRouter.patch('/atletas/:id/nascimento', requireAuth, atletasController.atualizarNascimento)
 
 // Rota pública da landing: sem auth, com seleção mínima de campos
 export const atletasPublicosRouter = Router()

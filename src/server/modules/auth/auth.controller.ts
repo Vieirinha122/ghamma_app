@@ -29,10 +29,7 @@ export async function login(req: Request, res: Response) {
   const resultado = schemaLogin.safeParse(req.body)
 
   if (!resultado.success) {
-    const detalhes = resultado.error.issues
-      .map((issue) => issue.message)
-      .join(' ')
-    throw new ApiErro(400, detalhes || 'Dados inválidos')
+    throw ApiErro.validacao(resultado.error)
   }
 
   const sessao = await authService.autenticarUsuario(resultado.data)

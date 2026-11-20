@@ -30,3 +30,12 @@ export function atualizarExibicao(id: string, exibeNoSite: boolean) {
     body: JSON.stringify({ exibeNoSite }),
   })
 }
+
+export function atualizarNascimento(id: string, dataNascimento: string | null) {
+  // define/limpa o nascimento → idade passa a ser calculada (ou volta ao reportado)
+  return apiFetch<{ atleta: AtletaListagem }>(`/api/atletas/${id}/nascimento`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dataNascimento }),
+  })
+}

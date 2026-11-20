@@ -48,6 +48,9 @@ model Atleta {
   id          String   @id @default(uuid())
   nomeCompleto String
   idade       Int?
+  // Nascimento: quando preenchido, a idade é calculada dele (sempre exata);
+  // `idade` acima fica como fallback (valor reportado na ficha).
+  dataNascimento DateTime?
   sexo        String?
   telefone    String?
   email       String?

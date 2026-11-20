@@ -115,7 +115,7 @@ export function AdminPanel() {
 
       <section className="mt-5 flex flex-col gap-6 rounded-[18px] border bg-card p-5 shadow-sm md:flex-row md:items-start md:justify-between md:p-7">
         <div>
-          <h1 className="font-display text-[clamp(2rem,3.5vw,3.4rem)] leading-[1.05]">Jogadores e anamnese</h1>
+          <h1 className="font-display text-[clamp(2rem,3.5vw,3.4rem)] leading-[1.05] tracking-[-0.02em]">Jogadores e anamnese</h1>
           <p className="mt-4 max-w-[800px] text-muted-foreground">
             Consulte a base de atletas do CTGV, marque quem aparece no site e abra a ficha
             completa de cada jogador.
@@ -128,21 +128,21 @@ export function AdminPanel() {
           <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
             Total de atletas
           </span>
-          <strong className="mt-2.5 block text-3xl">{totalAtletas}</strong>
+          <strong className="mt-2.5 block font-display text-3xl font-extrabold">{totalAtletas}</strong>
           <p className="text-sm text-muted-foreground">Base do banco, entre todas as fichas importadas.</p>
         </article>
         <article className="rounded-[20px] border bg-card p-5 shadow-sm">
           <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
             Com dor atual
           </span>
-          <strong className="mt-2.5 block text-3xl">{totalComDor}</strong>
+          <strong className="mt-2.5 block font-display text-3xl font-extrabold">{totalComDor}</strong>
           <p className="text-sm text-muted-foreground">Ajuda a priorizar avaliações e acompanhamentos.</p>
         </article>
         <article className="rounded-[20px] border bg-card p-5 shadow-sm">
           <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
             Categorias ativas
           </span>
-          <strong className="mt-2.5 block text-3xl">{totalCategorias}</strong>
+          <strong className="mt-2.5 block font-display text-3xl font-extrabold">{totalCategorias}</strong>
           <p className="text-sm text-muted-foreground">Resumo rápido das turmas já registradas.</p>
         </article>
       </section>
@@ -227,7 +227,7 @@ export function AdminPanel() {
                 }}
               >
                 <div className="mb-2.5 flex items-center justify-between gap-3">
-                  <strong className="text-base">{atleta.nomeCompleto}</strong>
+                  <strong className="text-base font-extrabold tracking-tight">{atleta.nomeResumido}</strong>
                   <div className="flex flex-shrink-0 items-center gap-3">
                     {atleta.temDorAtual === true ? (
                       <Badge variant="outline" className="border-amber-300 bg-amber-50 text-amber-800">
@@ -276,3 +276,5 @@ export function AdminPanel() {
     </div>
   )
 }
+
+

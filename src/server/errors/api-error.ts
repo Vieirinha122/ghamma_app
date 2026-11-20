@@ -18,4 +18,11 @@ export class ApiErro extends Error {
   static naoAutenticado(mensagem = 'Sessão expirada ou inválida') {
     return new ApiErro(401, mensagem)
   }
+
+  // Padroniza a resposta 400 a partir de um ZodError: uma linha com todas as
+  // mensagens, sempre no mesmo formato ({ erro: '...' }).
+  static validacao(erro: { issues: ReadonlyArray<{ message: string }> }) {
+    const detalhes = erro.issues.map((issue) => issue.message).join(' ')
+    return new ApiErro(400, detalhes || 'Dados inválidos')
+  }
 }

@@ -12,6 +12,7 @@ import bcrypt from 'bcryptjs'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '../generated/client'
 import { athleteFields } from '../src/modules/ficha/data/formSchema'
+import { normalizarNome } from '../src/server/utils/nome'
 
 // Mesmas regras do normalizeText do front: os aliases do formSchema estão
 // nessa forma normalizada (minúsculas, sem acento, só letras/números).
@@ -116,7 +117,7 @@ async function main() {
         }
       }
 
-      const nomeCompleto = (valores.fullName ?? '').trim()
+      const nomeCompleto = normalizarNome(valores.fullName ?? '')
       if (!nomeCompleto) {
         console.warn('[seed] linha ignorada: sem nome completo')
         continue
@@ -125,6 +126,12 @@ async function main() {
       const idade = Number.parseInt(valores.age ?? '', 10)
       const temDorAtual =
         valores.hasCurrentPain === 'Sim' ? true : valores.hasCurrentPain === 'Não' ? false : null
+
+      // data de nascimento: quando a planilha passar a ter a coluna, entra aqui;
+      // enquanto isso, a idade reportada continua como fallback
+      const dataNascimento = /^\d{4}-\d{2}-\d{2}$/.test(valores.birthDate ?? '')
+        ? new Date(`${valores.birthDate}T12:00:00`)
+        : null
 
       // atleta do Ghamma/CTGV = aparece na seção pública do site.
       // Regra de importação: só na CRIAÇÃO — o seed nunca desmarca
@@ -135,6 +142,7 @@ async function main() {
       const dadosAtualizacao = {
         nomeCompleto,
         idade: Number.isFinite(idade) ? idade : null,
+        dataNascimento,
         sexo: valores.gender || null,
         telefone: valores.phone || null,
         email: valores.email || null,

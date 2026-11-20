@@ -6,6 +6,7 @@ import { ApiErro } from '../../errors/api-error'
 import {
   schemaConsultaAtletas,
   schemaExibicaoAtleta,
+  schemaNascimentoAtleta,
 } from '../../../contracts/schemas/atletas'
 import * as atletasService from './service'
 
@@ -13,8 +14,7 @@ function parseConsulta(req: Request) {
   const resultado = schemaConsultaAtletas.safeParse(req.query)
 
   if (!resultado.success) {
-    const detalhes = resultado.error.issues.map((issue) => issue.message).join(' ')
-    throw new ApiErro(400, detalhes || 'Filtros inválidos')
+    throw ApiErro.validacao(resultado.error)
   }
 
   // filtra valores vazios: ?q= e ?posicao= não vira filtro
@@ -59,10 +59,29 @@ export async function atualizarExibicao(req: Request, res: Response) {
   const corpo = schemaExibicaoAtleta.safeParse(req.body)
 
   if (!corpo.success) {
-    throw new ApiErro(400, 'Informe exibeNoSite como true ou false')
+    throw ApiErro.validacao(corpo.error)
   }
 
   res.json({
     atleta: await atletasService.atualizarExibicao(id.data, corpo.data.exibeNoSite),
+  })
+}
+
+// PATCH /atletas/:id/nascimento (protegido) → data que alimenta a idade exata
+export async function atualizarNascimento(req: Request, res: Response) {
+  const id = z.uuid().safeParse(req.params.id)
+
+  if (!id.success) {
+    throw new ApiErro(400, 'Id de atleta inválido')
+  }
+
+  const corpo = schemaNascimentoAtleta.safeParse(req.body)
+
+  if (!corpo.success) {
+    throw ApiErro.validacao(corpo.error)
+  }
+
+  res.json({
+    atleta: await atletasService.atualizarNascimento(id.data, corpo.data.dataNascimento),
   })
 }

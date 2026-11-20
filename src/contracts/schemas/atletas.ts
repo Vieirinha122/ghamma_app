@@ -20,10 +20,20 @@ export const schemaExibicaoAtleta = z.object({
 
 export type ExibicaoAtleta = z.infer<typeof schemaExibicaoAtleta>
 
+// Body do PATCH de nascimento: define ou limpa (null) a data de nascimento.
+// É ela que alimenta o cálculo automático de idade.
+export const schemaNascimentoAtleta = z.object({
+  // aceita null para remover a data e voltar à idade reportada
+  dataNascimento: z.union([z.string().date('Data em formato YYYY-MM-DD'), z.null()]),
+})
+
+export type NascimentoAtleta = z.infer<typeof schemaNascimentoAtleta>
+
 // Linha da listagem administrativa (enxuta, sem respostas da ficha)
 export interface AtletaListagem {
   id: string
   nomeCompleto: string
+  nomeResumido: string
   idade: number | null
   sexo: string | null
   categoriaAtual: string | null
@@ -41,11 +51,13 @@ export interface AtletaListagem {
 export interface AtletaPublico {
   id: string
   nomeCompleto: string
+  nomeResumido: string
   idade: number | null
   posicao: string | null
 }
 
 // Resposta do detalhe (ficha completa)
 export interface AtletaDetalhe extends AtletaListagem {
+  dataNascimento: string | null
   respostas: Record<string, string>
 }

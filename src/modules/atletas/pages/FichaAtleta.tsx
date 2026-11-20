@@ -1,14 +1,61 @@
 // Ficha completa do atleta (rota /admin/atletas/:id) — leitura, dados da API.
 // Renderização guiada pelo formSchema: mesmas seções e labels da anamnese.
 // UI em Tailwind + shadcn com a paleta do projeto.
+import { useState } from 'react'
 import { athleteFields, athleteSections } from '@/modules/ficha/data/formSchema'
 import { useAtleta } from '../hooks/useAtleta'
+import { useAtualizarNascimento } from '../hooks/useAtualizarNascimento'
+import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 
 // extrai o id do caminho: /admin/atletas/<id>
 function idDoCaminho() {
   const partida = window.location.pathname.match(/^\/admin\/atletas\/([^/]+)/)
   return partida?.[1] ?? null
+}
+
+// Editor do nascimento: componente separado para os hooks ficarem fora dos
+// retornos antecipados da página (regra dos hooks).
+function EditorNascimento({ id, dataSalva }: { id: string; dataSalva: string | null }) {
+  const [valorDigitado, setValorDigitado] = useState<string | null>(null)
+  const nascimento = useAtualizarNascimento()
+
+  const dataAtual = dataSalva?.slice(0, 10) ?? ''
+  const alterado = valorDigitado !== null && valorDigitado !== dataAtual
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+        Nascimento
+      </span>
+      <div className="flex items-center gap-2">
+        <Input
+          type="date"
+          value={valorDigitado ?? dataAtual}
+          onChange={(evento) => setValorDigitado(evento.target.value)}
+          className="h-8 w-36 rounded-lg bg-muted text-xs"
+        />
+        {alterado ? (
+          <button
+            type="button"
+            disabled={nascimento.isPending}
+            onClick={() =>
+              nascimento.mutate(
+                { id, dataNascimento: valorDigitado || null },
+                { onSuccess: () => setValorDigitado(null) },
+              )
+            }
+            className="cursor-pointer rounded-lg bg-primary px-2.5 py-1.5 text-xs font-bold text-white hover:bg-primary/90 disabled:opacity-50"
+          >
+            {nascimento.isPending ? 'Salvando…' : 'Salvar'}
+          </button>
+        ) : null}
+      </div>
+      <small className="text-[0.7rem] text-muted-foreground">
+        {dataAtual ? 'A idade se atualiza sozinha' : 'Sem data: usa a idade reportada na ficha'}
+      </small>
+    </div>
+  )
 }
 
 export function FichaAtleta() {
@@ -74,7 +121,7 @@ export function FichaAtleta() {
       </header>
 
       <section className="mt-5 rounded-[18px] border bg-card p-5 shadow-sm md:p-7">
-        <h1 className="font-display text-[clamp(2rem,3.5vw,3.4rem)] leading-[1.05]">{atleta.nomeCompleto}</h1>
+        <h1 className="font-display text-[clamp(2rem,3.5vw,3.4rem)] leading-[1.05] tracking-[-0.02em]">{atleta.nomeCompleto}</h1>
         <p className="mt-3 text-muted-foreground">
           {atleta.categoriaAtual || 'Sem categoria'} · {atleta.posicao || 'Sem posição'} ·{' '}
           {atleta.equipeAtual || 'Sem equipe'}
@@ -85,8 +132,10 @@ export function FichaAtleta() {
       <section className="mt-2 grid grid-cols-2 gap-3.5 rounded-[22px] border bg-card p-5 shadow-sm md:grid-cols-4 xl:grid-cols-6">
         <div>
           <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Idade</span>
-          <strong className="block">{atleta.idade ? `${atleta.idade} anos` : 'Não informada'}</strong>
+          <strong className="block font-display text-2xl">{atleta.idade ? `${atleta.idade} anos` : 'Não informada'}</strong>
         </div>
+        {/* editor do nascimento: com a data, a idade se atualiza sozinha todo ano */}
+        <EditorNascimento id={atleta.id} dataSalva={atleta.dataNascimento} />
         <div>
           <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Equipe</span>
           <strong className="block">{atleta.equipeAtual || 'Não informada'}</strong>
@@ -144,3 +193,4 @@ export function FichaAtleta() {
     </div>
   )
 }
+

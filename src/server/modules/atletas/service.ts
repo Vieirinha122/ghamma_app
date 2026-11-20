@@ -1,6 +1,8 @@
 // Regras de negócio do módulo atletas: validação de existência e formatos
 // de saída (datas em ISO para o JSON).
 import { ApiErro } from '../../errors/api-error'
+import { resumirNome } from '../../utils/nome'
+import { idadeParaExibicao } from '../../utils/idade'
 import type {
   AtletaDetalhe,
   AtletaListagem,
@@ -13,6 +15,7 @@ interface AtletaDoBanco {
   id: string
   nomeCompleto: string
   idade: number | null
+  dataNascimento?: Date | null
   sexo: string | null
   categoriaAtual: string | null
   posicao: string | null
@@ -28,7 +31,9 @@ function paraListagem(atleta: AtletaDoBanco): AtletaListagem {
   return {
     id: atleta.id,
     nomeCompleto: atleta.nomeCompleto,
-    idade: atleta.idade,
+    nomeResumido: resumirNome(atleta.nomeCompleto),
+    // idade viva: do nascimento quando existir; senão, a reportada
+    idade: idadeParaExibicao(atleta.dataNascimento ?? null, atleta.idade),
     sexo: atleta.sexo,
     categoriaAtual: atleta.categoriaAtual,
     posicao: atleta.posicao,
@@ -50,7 +55,8 @@ export async function listarAtletasPublicos(consulta: ConsultaAtletas): Promise<
   return atletas.map((atleta) => ({
     id: atleta.id,
     nomeCompleto: atleta.nomeCompleto,
-    idade: atleta.idade,
+    nomeResumido: resumirNome(atleta.nomeCompleto),
+    idade: idadeParaExibicao(atleta.dataNascimento ?? null, atleta.idade),
     posicao: atleta.posicao,
   }))
 }
@@ -64,8 +70,26 @@ export async function buscarAtletaDetalhe(id: string): Promise<AtletaDetalhe> {
 
   return {
     ...paraListagem(atleta),
+    dataNascimento: atleta.dataNascimento?.toISOString() ?? null,
     respostas: (atleta.respostas ?? {}) as Record<string, string>,
   }
+}
+
+export async function atualizarNascimento(
+  id: string,
+  dataNascimento: string | null,
+): Promise<AtletaListagem> {
+  const existente = await atletasRepository.buscarAtletaPorId(id)
+
+  if (!existente) {
+    throw new ApiErro(404, 'Atleta não encontrado')
+  }
+
+  const atualizado = await atletasRepository.atualizarDataNascimento(
+    id,
+    dataNascimento ? new Date(`${dataNascimento}T12:00:00`) : null,
+  )
+  return paraListagem(atualizado)
 }
 
 export async function atualizarExibicao(id: string, exibeNoSite: boolean): Promise<AtletaListagem> {

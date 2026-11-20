@@ -2,6 +2,7 @@
 // (lp-paper, lp-magenta, lp-cyan...) definidos no index.css.
 // Os pseudo-elementos do CSS original viraram elementos reais (risco do h1,
 // linha dos passos) — mesmo resultado, sem CSS fora do sistema.
+import { SecaoAtletas } from '../components/SecaoAtletas'
 const ArrowIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="ml-2.5 w-5">
     <path
@@ -58,7 +59,7 @@ export function LandingPage() {
                 {/* risco magenta inclinado (era pseudo-elemento) */}
                 <span className="mt-[0.16em] block h-[0.13em] w-[58%] -skew-x-[18deg] bg-lp-magenta" />
               </h1>
-              <p className="mt-7 mb-[30px] max-w-[60ch] text-[1.06rem] text-[#e5ddec]">
+              <p className="mt-7 mb-[30px] max-w-[60ch] text-[1.06rem] leading-relaxed text-[#e5ddec]">
                 Fundamentos, preparo físico e leitura de jogo para quem quer evoluir no vôlei,
                 começando do próprio nível.
               </p>
@@ -117,7 +118,7 @@ export function LandingPage() {
                 <h2 className="m-0 max-w-[720px] font-display text-[clamp(3rem,6vw,5.5rem)] leading-[0.92] font-black tracking-[-0.03em] text-balance">
                   Mais intenção em cada toque.
                 </h2>
-                <p className="mt-6 max-w-[66ch] text-[1.04rem] text-[#6a6074]">
+                <p className="mt-6 max-w-[66ch] text-[1.04rem] leading-relaxed text-[#6a6074]">
                   Treinar é entender o movimento, ganhar confiança e levar a decisão certa para o jogo.
                 </p>
               </div>
@@ -144,7 +145,7 @@ export function LandingPage() {
             <h2 className="m-0 max-w-[720px] font-display text-[clamp(3rem,6vw,5.5rem)] leading-[0.92] font-black tracking-[-0.03em] text-balance">
               Da primeira manchete à confiança no jogo.
             </h2>
-            <p className="mt-6 max-w-[66ch] text-[1.04rem] text-[#d5cada]">
+            <p className="mt-6 max-w-[66ch] text-[1.04rem] leading-relaxed text-[#d5cada]">
               A evolução acontece sem pular as etapas que sustentam cada jogada.
             </p>
             <div className="relative mt-[56px] grid grid-cols-1 gap-[34px] md:grid-cols-3 md:gap-[30px]">
@@ -184,7 +185,7 @@ export function LandingPage() {
                 <h2 className="m-0 max-w-[720px] font-display text-[clamp(3rem,6vw,5.5rem)] leading-[0.92] font-black tracking-[-0.03em] text-balance">
                   Há espaço para o seu momento.
                 </h2>
-                <p className="mt-6 max-w-[66ch] text-[1.04rem] text-[#6a6074]">
+                <p className="mt-6 max-w-[66ch] text-[1.04rem] leading-relaxed text-[#6a6074]">
                   Você não precisa chegar pronta. Precisa chegar com vontade de aprender, retomar ou avançar.
                 </p>
               </div>
@@ -204,6 +205,9 @@ export function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* atletas do ghamma (público; some sozinha se não houver atletas marcados) */}
+        <SecaoAtletas />
       </main>
 
       <footer className="bg-[#05021a] py-10 text-[#d9cee3]">
@@ -215,3 +219,6 @@ export function LandingPage() {
     </div>
   )
 }
+
+
+

@@ -18,11 +18,12 @@ const COLUNAS_LISTAGEM = {
 } as const
 
 // Seleção do endpoint público: o mínimo que a landing precisa mostrar.
-// Qualquer campo novo aqui é decisão consciente de exposição pública.
+// dataNascimento entra para o service calcular a idade atual (não é exposto).
 const COLUNAS_PUBLICAS = {
   id: true,
   nomeCompleto: true,
   idade: true,
+  dataNascimento: true,
   posicao: true,
 } as const
 
@@ -79,6 +80,15 @@ export function atualizarExibicao(id: string, exibeNoSite: boolean) {
   return prisma.atleta.update({
     where: { id },
     data: { exibeNoSite },
+    select: COLUNAS_LISTAGEM,
+  })
+}
+
+export function atualizarDataNascimento(id: string, dataNascimento: Date | null) {
+  // nascimento: alimenta o cálculo automático de idade
+  return prisma.atleta.update({
+    where: { id },
+    data: { dataNascimento },
     select: COLUNAS_LISTAGEM,
   })
 }
