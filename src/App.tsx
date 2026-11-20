@@ -1,17 +1,36 @@
 // Raiz do app: escolhe a tela pela rota.
 // Landing é pública; /admin/* exige sessão (portão do AuthProvider) e
 // /admin/login é a exceção que aparece quando não há sessão.
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { LandingPage } from './modules/landing/pages/LandingPage'
-import { AdminPanel } from './modules/atletas/pages/AdminPanel'
-import { FichaAtleta } from './modules/atletas/pages/FichaAtleta'
-import { LoginPage } from './modules/auth/pages/LoginPage'
 import { AuthProvider } from './modules/auth/context/AuthProvider'
 import { useAuth } from './modules/auth/hooks/useAuth'
 import { Spinner } from './components/ui/spinner'
 
+const AdminPanel = lazy(() => import('./modules/atletas/pages/AdminPanel').then((modulo) => ({ default: modulo.AdminPanel })))
+const FichaAtleta = lazy(() => import('./modules/atletas/pages/FichaAtleta').then((modulo) => ({ default: modulo.FichaAtleta })))
+const LoginPage = lazy(() => import('./modules/auth/pages/LoginPage').then((modulo) => ({ default: modulo.LoginPage })))
+const GaleriaPage = lazy(() => import('./modules/landing/pages/GaleriaPage').then((modulo) => ({ default: modulo.GaleriaPage })))
+const AtletasPage = lazy(() => import('./modules/landing/pages/AtletasPage').then((modulo) => ({ default: modulo.AtletasPage })))
+
 function App() {
+  return (
+    <Suspense fallback={<SplashCarregando />}>
+      <RoteadorPrincipal />
+    </Suspense>
+  )
+}
+
+function RoteadorPrincipal() {
   const caminho = window.location.pathname
+
+  if (caminho === '/galeria') {
+    return <GaleriaPage />
+  }
+
+  if (caminho === '/atletas') {
+    return <AtletasPage />
+  }
 
   if (caminho.startsWith('/admin/login')) {
     return (

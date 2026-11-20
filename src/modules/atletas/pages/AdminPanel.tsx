@@ -81,7 +81,7 @@ export function AdminPanel() {
       {/* topbar em brand-ink: identidade do painel */}
       <header className="mb-4 grid grid-cols-1 items-center gap-3 rounded-[18px] bg-brand-ink p-4 text-white md:min-h-[88px] md:grid-cols-[auto_1fr_auto] md:gap-8 md:px-[18px] md:py-2.5">
         <a className="flex items-center gap-3 no-underline" href="/admin" aria-label="Ghamma Volley — painel">
-          <img src="/ghamma-logo.png" alt="Ghamma Vôlei" className="h-16 w-18 object-contain" />
+          <img src="/ghamma-logo.webp" alt="Ghamma Vôlei" width="1212" height="1073" className="h-16 w-18 object-contain" />
           <span className="flex flex-col">
             <strong className="font-display text-[1.35rem] leading-none">Ghamma Volley</strong>
             <small className="text-xs text-brand-soft">Gestão de jogadores</small>

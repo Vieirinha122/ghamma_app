@@ -64,7 +64,7 @@ function FormularioLogin({ onEntrar }: { onEntrar: (email: string, senha: string
         onSubmit={handleSubmit(submeter)}
       >
         <div className="flex items-center gap-3.5">
-          <img src="/ghamma-logo.png" alt="Ghamma Vôlei" className="h-[76px] w-[84px] object-contain" />
+          <img src="/ghamma-logo.webp" alt="Ghamma Vôlei" width="1212" height="1073" className="h-[76px] w-[84px] object-contain" />
           <div className="flex flex-col">
             <strong className="font-display text-[1.6rem] leading-[1.05] text-brand-ink">Ghamma Volley</strong>
             <small className="text-[0.78rem] text-muted-foreground">Painel de gestão de jogadores</small>

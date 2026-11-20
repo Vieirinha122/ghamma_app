@@ -1,0 +1,26 @@
+{
+  "id": "/admin/",
+  "name": "Ghamma Volley Admin",
+  "short_name": "Ghamma Admin",
+  "description": "Painel administrativo do CT Ghamma Volley.",
+  "lang": "pt-BR",
+  "start_url": "/admin/",
+  "scope": "/admin/",
+  "display": "standalone",
+  "background_color": "#080426",
+  "theme_color": "#080426",
+  "icons": [
+    {
+      "src": "/admin-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/admin-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
