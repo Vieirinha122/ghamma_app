@@ -1,3 +1,5 @@
+// Contratos de tipo do domínio da ficha (usados pelo formSchema e pela
+// renderização da ficha). Tipos de API vivem em contracts/schemas/.
 export type FieldType = 'text' | 'textarea' | 'email' | 'tel' | 'number' | 'date' | 'select'
 
 export interface SectionDefinition {
@@ -15,18 +17,4 @@ export interface FieldDefinition {
   helperText?: string
   options?: string[]
   aliases?: string[]
-}
-
-export interface AthleteRecord {
-  id: string
-  source: 'manual' | 'csv'
-  createdAt: string
-  updatedAt: string
-  values: Record<string, string>
-}
-
-export interface ImportSummary {
-  added: number
-  updated: number
-  ignored: number
 }

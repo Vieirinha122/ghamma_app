@@ -44,6 +44,10 @@ function montarOnde(consulta: ConsultaAtletas) {
     condicoes.push({ posicao: { equals: consulta.posicao, mode: 'insensitive' } })
   }
 
+  if (consulta.categoria) {
+    condicoes.push({ categoriaAtual: { equals: consulta.categoria, mode: 'insensitive' } })
+  }
+
   return condicoes.length ? { AND: condicoes } : undefined
 }
 

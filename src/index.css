@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 :root {
   color: #160b2e;
   background: #f4f1f7;
@@ -25,6 +27,90 @@
   --danger: #ef4444;
   --warning: #f59e0b;
   --shadow: 0 18px 46px rgba(45, 18, 70, 0.1);
+}
+
+/* ── Tema shadcn/ui — paleta do projeto (nada de tema padrão) ──────────────
+   Valores casam com os tokens legados acima; os utilitários do Tailwind
+   (bg-primary, text-muted-foreground...) leem daqui via @theme inline. */
+:root {
+  --background: #f4f1f7;
+  --foreground: #160b2e;
+  --card: #ffffff;
+  --card-foreground: #160b2e;
+  --popover: #ffffff;
+  --popover-foreground: #160b2e;
+  --primary: #7018b8;
+  --primary-foreground: #ffffff;
+  --secondary: #f5ecfa;
+  --secondary-foreground: #4b0f76;
+  --muted: #f4eff8;
+  --muted-foreground: #675c72;
+  --accent: #00b9c2;
+  --accent-foreground: #080426;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #ded6e5;
+  --input: #ded6e5;
+  --ring: #7018b8;
+  --radius: 0.75rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-soft: #cfc4d8;
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 6px);
+  --font-sans: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Barlow Condensed', sans-serif;
+  /* paleta da landing (levemente diferente dos tokens do painel) */
+  --color-lp-paper: #f8f5fb;
+  --color-lp-magenta: #c331d2;
+  --color-lp-cyan: #00c7d0;
+  --color-lp-purple: #401060;
+  /* animação de entrada da logo (motion-safe aplica no uso) */
+  --animate-entrada-logo: entrada-logo 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  @keyframes entrada-logo {
+    from {
+      transform: translate(60px, -30px) scale(0.88);
+      opacity: 0;
+    }
+    to {
+      transform: translate(0, 0) scale(1);
+      opacity: 1;
+    }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
 }
 
 * {

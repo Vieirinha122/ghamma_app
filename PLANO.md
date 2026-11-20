@@ -85,6 +85,8 @@
 - [ ] *(pré-marcado da conversa)* Log de auditoria de acesso a fichas clínicas (quem consultou qual atleta e quando) — LGPD
 - [ ] *(pré-marcado da conversa)* Testes automatizados (Vitest) — só quando você pedir explicitamente
 - [ ] Export CSV de atletas de volta, gerado pelo backend
+- [ ] **Refino da landing page (UX/UI)**: releitura geral com olhar sênior (hierarquia, microdecisões, copy)
+- [ ] **Seção de contato na landing**: formulário curto (nome + interesse) que monta uma mensagem pré-definida e abre o WhatsApp (wa.me com texto preenchido) — sem backend, link direto
 - [ ] Painel de indicadores agregados (EVA médio, dores por região, evolução por categoria)
 - [ ] Página pública de resultados/calendário do CTGV na landing
 - [ ] Notificações para o admin quando chega resposta nova do formulário

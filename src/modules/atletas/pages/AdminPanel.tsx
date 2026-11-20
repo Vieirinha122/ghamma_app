@@ -1,783 +1,278 @@
-// Painel de gestão de atletas (rota /admin).
-// Hoje lista do localStorage; a etapa de migração troca isso pela API (modules/atletas).
-import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
-import './AdminPanel.css'
-import { useAuth } from '../../auth/hooks/useAuth'
-import { athleteFields, athleteSections } from '../../ficha/data/formSchema'
-import type { AthleteRecord, FieldDefinition } from '../../../contracts/types'
+// Painel de gestão (rota /admin): listagem de atletas vindos da API.
+// A ficha completa mora em página separada (/admin/atletas/:id).
+// UI em Tailwind + shadcn/ui com a paleta do projeto (ver index.css).
+import { useMemo, useState } from 'react'
+import { useAuth } from '@/modules/auth/hooks/useAuth'
+import { useDebounce } from '@/hooks/useDebounce'
+import { athleteFields } from '@/modules/ficha/data/formSchema'
+import { useAtletas, useAtletasTotais } from '../hooks/useAtletas'
+import { useAtualizarExibicao } from '../hooks/useAtualizarExibicao'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Spinner } from '@/components/ui/spinner'
+import { Switch } from '@/components/ui/switch'
 import {
-  applyDerivedValues,
-  buildRecord,
-  formatBirthDate,
-  formatDateTime,
-  getAthleteAge,
-  getAthleteName,
-  STORAGE_KEY,
-} from '../utils/athlete'
-import {
-  exportAthletesToCsv,
-  exportTemplateCsv,
-  importAthletesFromCsv,
-  mergeImportedAthletes,
-} from '../utils/csv'
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
-type PanelMode = 'view' | 'create' | 'edit'
-type NoticeTone = 'success' | 'info' | 'error'
+// opções de posição e categoria vêm do próprio domínio da ficha (fonte única)
+const campoPosicao = athleteFields.find((campo) => campo.key === 'position')
+const opcoesPosicao = campoPosicao?.options ?? []
+const opcoesCategoria =
+  athleteFields.find((campo) => campo.key === 'currentCategory')?.options ?? []
 
-interface NoticeState {
-  tone: NoticeTone
-  text: string
-}
-
-const sectionFieldsMap = new Map(
-  athleteSections.map((section) => [
-    section.key,
-    athleteFields.filter((field) => field.section === section.key),
-  ]),
-)
-
-const requiredFieldsBySection: Record<string, string[]> = {
-  identification: ['fullName'],
-}
-
-function loadStoredAthletes() {
-  try {
-    const rawValue = localStorage.getItem(STORAGE_KEY)
-    if (!rawValue) {
-      return [] as AthleteRecord[]
-    }
-
-    const parsedValue = JSON.parse(rawValue) as AthleteRecord[]
-    return Array.isArray(parsedValue) ? parsedValue : []
-  } catch {
-    return [] as AthleteRecord[]
-  }
-}
-
-function sortAthletes(records: AthleteRecord[]) {
-  return [...records].sort((firstRecord, secondRecord) => {
-    return getAthleteName(firstRecord).localeCompare(getAthleteName(secondRecord), 'pt-BR')
-  })
-}
-
-function cloneRecord(record: AthleteRecord) {
-  return {
-    ...record,
-    values: { ...record.values },
-  }
-}
-
-function downloadTextFile(content: string, fileName: string, mimeType = 'text/csv;charset=utf-8;') {
-  const blob = new Blob([content], { type: mimeType })
-  const objectUrl = URL.createObjectURL(blob)
-  const anchor = document.createElement('a')
-  anchor.href = objectUrl
-  anchor.download = fileName
-  anchor.click()
-  URL.revokeObjectURL(objectUrl)
-}
-
-function getFieldDisplayValue(field: FieldDefinition, record: AthleteRecord) {
-  const value = record.values[field.key] || ''
-
-  if (!value.trim()) {
-    return '—'
-  }
-
-  if (field.key === 'birthDate') {
-    return formatBirthDate(value)
-  }
-
-  return value
-}
-
-function matchesQuery(record: AthleteRecord, query: string) {
-  if (!query.trim()) {
-    return true
-  }
-
-  const haystack = [
-    record.values.fullName,
-    record.values.currentCategory,
-    record.values.position,
-    record.values.currentTeam,
-    record.values.phone,
-  ]
-    .join(' ')
-    .toLocaleLowerCase()
-
-  return haystack.includes(query.trim().toLocaleLowerCase())
-}
-
-function getFirstRecordId(records: AthleteRecord[]) {
-  return sortAthletes(records)[0]?.id ?? null
-}
-
-function getAthleteAgeLabel(record: AthleteRecord) {
-  const age = getAthleteAge(record)
-  return age === '—' ? 'Idade não informada' : `${age} anos`
-}
-
-function getSectionProgress(sectionKey: string, values: Record<string, string>) {
-  const sectionFields = sectionFieldsMap.get(sectionKey) ?? []
-  const total = sectionFields.length
-  const filled = sectionFields.filter((field) => values[field.key]?.trim()).length
-
-  return {
-    filled,
-    total,
-    isComplete: total > 0 && filled === total,
-  }
-}
-
-function getSectionErrors(sectionKey: string, values: Record<string, string>) {
-  const requiredFields = requiredFieldsBySection[sectionKey] ?? []
-  return requiredFields.filter((fieldKey) => !values[fieldKey]?.trim())
-}
-
-function getSectionStatus(sectionIndex: number, currentStep: number, values: Record<string, string>) {
-  const section = athleteSections[sectionIndex]
-  const progress = getSectionProgress(section.key, values)
-  const hasErrors = getSectionErrors(section.key, values).length > 0
-
-  if (sectionIndex === currentStep) {
-    return 'active'
-  }
-
-  if (hasErrors && progress.filled > 0) {
-    return 'warning'
-  }
-
-  if (progress.isComplete || sectionIndex < currentStep) {
-    return 'complete'
-  }
-
-  return 'idle'
+// plural por posição: as opções vêm como "Levantador(a)", então o rótulo
+// do contador precisa de grafia humana ("12 levantadores", "9 centrais")
+const pluralPosicoes: Record<string, string> = {
+  'Levantador(a)': 'levantadores',
+  'Ponteiro(a)': 'ponteiros',
+  Central: 'centrais',
+  Líbero: 'líberos',
+  Oposto: 'opostos',
 }
 
 export function AdminPanel() {
-  const { sair } = useAuth()
-  const [athletes, setAthletes] = useState<AthleteRecord[]>(() => loadStoredAthletes())
-  const [selectedId, setSelectedId] = useState<string | null>(() =>
-    getFirstRecordId(loadStoredAthletes()),
-  )
-  const [mode, setMode] = useState<PanelMode>('view')
-  const [draft, setDraft] = useState<AthleteRecord>(() => buildRecord({ currentTeam: 'CTGV' }))
-  const [query, setQuery] = useState('')
-  const [notice, setNotice] = useState<NoticeState | null>(null)
-  const [wizardStep, setWizardStep] = useState(0)
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const { sair, usuario } = useAuth()
+  const [buscaInput, setBuscaInput] = useState('')
+  const [posicao, setPosicao] = useState('')
+  const [categoria, setCategoria] = useState('')
 
-  const sortedAthletes = useMemo(() => sortAthletes(athletes), [athletes])
-  const filteredAthletes = useMemo(
-    () => sortedAthletes.filter((record) => matchesQuery(record, query)),
-    [query, sortedAthletes],
+  // busca só dispara a requisição depois de 300ms sem digitar
+  const busca = useDebounce(buscaInput, 300)
+  const consulta = useMemo(
+    () => ({ q: busca || undefined, posicao: posicao || undefined, categoria: categoria || undefined }),
+    [busca, posicao, categoria],
   )
 
-  const selectedRecord = useMemo(
-    () => athletes.find((record) => record.id === selectedId) ?? null,
-    [athletes, selectedId],
-  )
+  const lista = useAtletas(consulta)
+  const totais = useAtletasTotais()
+  const curadoria = useAtualizarExibicao()
 
-  const totalWithPain = useMemo(
-    () => athletes.filter((record) => record.values.hasCurrentPain === 'Sim').length,
-    [athletes],
-  )
+  const atletas = lista.data?.atletas ?? []
+  const todos = totais.data?.atletas ?? []
 
-  const totalCategories = useMemo(() => {
-    return new Set(
-      athletes
-        .map((record) => record.values.currentCategory)
-        .filter((currentCategory) => currentCategory.trim()),
-    ).size
-  }, [athletes])
+  // indicadores vêm da base completa, não da busca filtrada
+  const totalAtletas = todos.length
+  const totalComDor = todos.filter((atleta) => atleta.temDorAtual === true).length
+  const totalCategorias = new Set(
+    todos.map((atleta) => atleta.categoriaAtual).filter(Boolean),
+  ).size
 
-  const currentSection = athleteSections[wizardStep]
-  const currentStepFields = currentSection
-    ? (sectionFieldsMap.get(currentSection.key) ?? [])
-    : []
-  const totalSteps = athleteSections.length
-  const isWizardMode = mode !== 'view'
-  const isLastStep = wizardStep === totalSteps - 1
-  const currentStepErrors = currentSection
-    ? getSectionErrors(currentSection.key, draft.values)
-    : []
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(athletes))
-  }, [athletes])
-
-  useEffect(() => {
-    if (!notice) {
-      return
-    }
-
-    const timeoutId = window.setTimeout(() => setNotice(null), 3500)
-    return () => window.clearTimeout(timeoutId)
-  }, [notice])
-
-  useEffect(() => {
-    if (!isWizardMode) {
-      return
-    }
-
-    const previousOverflow = document.body.style.overflow
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setMode('view')
-        setWizardStep(0)
-      }
-    }
-
-    document.body.style.overflow = 'hidden'
-    window.addEventListener('keydown', handleKeyDown)
-
-    return () => {
-      document.body.style.overflow = previousOverflow
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isWizardMode])
-
-  function showNotice(text: string, tone: NoticeTone = 'info') {
-    setNotice({ text, tone })
+  const alternarExibicao = (id: string, exibeNoSite: boolean) => {
+    curadoria.mutate({ id, exibeNoSite })
   }
 
-  function openWizard(nextMode: Exclude<PanelMode, 'view'>, record?: AthleteRecord) {
-    setDraft(record ? cloneRecord(record) : buildRecord({ currentTeam: 'CTGV' }))
-    setWizardStep(0)
-    setMode(nextMode)
-  }
-
-  function handleCreateAthlete() {
-    openWizard('create')
-  }
-
-  function handleEditAthlete() {
-    if (!selectedRecord) {
-      return
-    }
-
-    openWizard('edit', selectedRecord)
-  }
-
-  function handleCloseWizard() {
-    setMode('view')
-    setWizardStep(0)
-  }
-
-  function handleDeleteAthlete() {
-    if (!selectedRecord) {
-      return
-    }
-
-    const confirmed = window.confirm(
-      `Deseja remover o atleta ${getAthleteName(selectedRecord)}? Essa ação apaga o registro salvo no navegador.`,
-    )
-
-    if (!confirmed) {
-      return
-    }
-
-    const remainingAthletes = athletes.filter((record) => record.id !== selectedRecord.id)
-    setAthletes(remainingAthletes)
-    setSelectedId(getFirstRecordId(remainingAthletes))
-    setMode('view')
-    showNotice('Atleta removido com sucesso.', 'success')
-  }
-
-  function handleFieldChange(field: FieldDefinition, value: string) {
-    setDraft((currentDraft) => ({
-      ...currentDraft,
-      values: applyDerivedValues({
-        ...currentDraft.values,
-        [field.key]: value,
-      }),
-    }))
-  }
-
-  function handleSaveAthlete() {
-    const normalizedValues = applyDerivedValues(draft.values)
-
-    if (!normalizedValues.fullName.trim()) {
-      showNotice('Informe pelo menos o nome completo do atleta.', 'error')
-      setWizardStep(0)
-      return
-    }
-
-    const timestamp = new Date().toISOString()
-    const athleteToSave: AthleteRecord = {
-      ...draft,
-      updatedAt: timestamp,
-      createdAt: mode === 'create' ? timestamp : draft.createdAt,
-      values: normalizedValues,
-    }
-
-    const nextAthletes =
-      mode === 'edit'
-        ? athletes.map((record) => (record.id === athleteToSave.id ? athleteToSave : record))
-        : [...athletes, athleteToSave]
-
-    setAthletes(nextAthletes)
-    setSelectedId(athleteToSave.id)
-    handleCloseWizard()
-    showNotice(mode === 'edit' ? 'Cadastro atualizado.' : 'Atleta cadastrado.', 'success')
-  }
-
-  function handlePreviousStep() {
-    setWizardStep((currentStepValue) => Math.max(0, currentStepValue - 1))
-  }
-
-  function handleNextStep() {
-    if (currentStepErrors.length) {
-      const missingLabels = athleteFields
-        .filter((field) => currentStepErrors.includes(field.key))
-        .map((field) => field.label)
-        .join(', ')
-
-      showNotice(`Preencha antes de avançar: ${missingLabels}.`, 'error')
-      return
-    }
-
-    setWizardStep((currentStepValue) => Math.min(totalSteps - 1, currentStepValue + 1))
-  }
-
-  function handleSelectWizardStep(stepIndex: number) {
-    if (!isWizardMode) {
-      return
-    }
-
-    if (stepIndex > wizardStep && currentStepErrors.length) {
-      showNotice('Complete os campos obrigatórios da etapa atual antes de avançar.', 'error')
-      return
-    }
-
-    setWizardStep(stepIndex)
-  }
-
-  async function handleImportFile(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    if (!file) {
-      return
-    }
-
-    const csvContent = await file.text()
-    const importResult = importAthletesFromCsv(csvContent)
-    const mergedResult = mergeImportedAthletes(athletes, importResult.records)
-    const nextRecords = sortAthletes(mergedResult.records)
-
-    setAthletes(nextRecords)
-    setSelectedId(nextRecords[0]?.id ?? null)
-    setMode('view')
-
-    const message = `${mergedResult.summary.added} adicionados, ${mergedResult.summary.updated} atualizados e ${importResult.ignored} linhas ignoradas.`
-    showNotice(`Importação concluída: ${message}`, 'success')
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
-  }
-
-  function handleExportData() {
-    if (!athletes.length) {
-      showNotice('Cadastre ou importe atletas antes de exportar.', 'info')
-      return
-    }
-
-    downloadTextFile(exportAthletesToCsv(sortAthletes(athletes)), 'ctgv-atletas.csv')
-  }
-
-  function handleExportTemplate() {
-    downloadTextFile(exportTemplateCsv(), 'ctgv-modelo-importacao.csv')
-  }
-
-  const panelTitle = selectedRecord
-    ? getAthleteName(selectedRecord)
-    : 'Nenhum atleta selecionado'
+  // contador do header: sempre o resultado DA BUSCA atual (não da base toda)
+  const totalResultado = lista.data?.atletas.length ?? 0
+  const rotuloContagem = lista.isPending
+    ? 'Contando…'
+    : `${
+        posicao
+          ? `${totalResultado} ${pluralPosicoes[posicao] ?? posicao.toLocaleLowerCase('pt-BR')}`
+          : `${totalResultado} ${totalResultado === 1 ? 'atleta' : 'atletas'}`
+      }${categoria ? ` · ${categoria}` : ''}`
 
   return (
-    <>
-      <div className="app-shell">
-        <header className="app-topbar">
-          <a className="app-brand" href="#visao-geral" aria-label="Ghamma Volley — visão geral">
-            <img src="/ghamma-logo.png" alt="Ghamma Vôlei" />
-            <span>
-              <strong>Ghamma Volley</strong>
-              <small>Gestão de jogadores</small>
+    <div className="mx-auto w-full max-w-[1600px] p-4 md:p-8">
+      {/* topbar em brand-ink: identidade do painel */}
+      <header className="mb-4 grid grid-cols-1 items-center gap-3 rounded-[18px] bg-brand-ink p-4 text-white md:min-h-[88px] md:grid-cols-[auto_1fr_auto] md:gap-8 md:px-[18px] md:py-2.5">
+        <a className="flex items-center gap-3 no-underline" href="/admin" aria-label="Ghamma Volley — painel">
+          <img src="/ghamma-logo.png" alt="Ghamma Vôlei" className="h-16 w-18 object-contain" />
+          <span className="flex flex-col">
+            <strong className="font-display text-[1.35rem] leading-none">Ghamma Volley</strong>
+            <small className="text-xs text-brand-soft">Gestão de jogadores</small>
+          </span>
+        </a>
+        <nav className="flex items-center gap-1.5 overflow-x-auto" aria-label="Navegação do painel">
+          <a
+            href="/admin"
+            className="inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold text-white transition-colors hover:bg-purple-500/20"
+          >
+            Jogadores
+            <span className="grid h-6 min-w-6 place-items-center rounded-full bg-accent px-1.5 text-xs text-brand-ink">
+              {totalAtletas}
             </span>
           </a>
-          <nav className="app-navigation" aria-label="Navegação do painel">
-            <a href="#visao-geral">Visão geral</a>
-            <a className="active" href="#jogadores">
-              Jogadores <span>{athletes.length}</span>
-            </a>
-          </nav>
-          <div className="topbar-actions">
-            <p className="storage-note">Dados salvos neste navegador</p>
-            <a className="admin-site-link" href="/">Ver landing page</a>
-            <button className="ghost-button" type="button" onClick={sair}>
-              Sair
-            </button>
-          </div>
-        </header>
-
-        <header className="hero-panel" id="visao-geral">
-          <div>
-            <h1>Jogadores e anamnese</h1>
-            <p className="hero-copy">
-              Cadastre alunos, acompanhe idade e categoria, consulte a ficha completa e
-              mantenha um backup em CSV.
-            </p>
-          </div>
-          <div className="hero-actions">
-            <button className="primary-button" type="button" onClick={handleCreateAthlete}>
-              Novo atleta
-            </button>
-            <button className="secondary-button" type="button" onClick={handleExportData}>
-              Exportar CSV
-            </button>
-            <button className="ghost-button" type="button" onClick={handleExportTemplate}>
-              Baixar modelo CSV
-            </button>
-            <label className="secondary-button upload-button">
-              Importar CSV
-              <input
-                ref={fileInputRef}
-                accept=".csv"
-                type="file"
-                onChange={handleImportFile}
-              />
-            </label>
-          </div>
-        </header>
-
-        <section className="stats-grid">
-          <article className="stat-card stat-card-highlight">
-            <span>Total de atletas</span>
-            <strong>{athletes.length}</strong>
-            <p>Base consolidada entre cadastros manuais e importações.</p>
-          </article>
-          <article className="stat-card">
-            <span>Com dor atual</span>
-            <strong>{totalWithPain}</strong>
-            <p>Ajuda a priorizar avaliações e acompanhamentos.</p>
-          </article>
-          <article className="stat-card">
-            <span>Categorias ativas</span>
-            <strong>{totalCategories}</strong>
-            <p>Resumo rápido das turmas já registradas.</p>
-          </article>
-        </section>
-
-        {notice ? <div className={`notice notice-${notice.tone}`}>{notice.text}</div> : null}
-
-        <main className="workspace-grid" id="jogadores">
-          <aside className="list-panel">
-            <div className="panel-header">
-              <div>
-                <p className="panel-kicker">Cadastros</p>
-                <h2>Jogadores</h2>
-              </div>
-              <input
-                className="search-input"
-                type="search"
-                placeholder="Buscar por nome, categoria ou posição"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-              />
-            </div>
-
-            <div className="athlete-list">
-              {filteredAthletes.length ? (
-                filteredAthletes.map((record) => {
-                  const isSelected = selectedId === record.id
-                  return (
-                    <button
-                      key={record.id}
-                      type="button"
-                      className={`athlete-card ${isSelected ? 'selected' : ''}`}
-                      onClick={() => setSelectedId(record.id)}
-                    >
-                      <div className="athlete-card-header">
-                        <strong>{getAthleteName(record)}</strong>
-                        {record.values.hasCurrentPain === 'Sim' ? (
-                          <span className="badge badge-alert">Dor atual</span>
-                        ) : (
-                          <span className="badge">Sem dor atual</span>
-                        )}
-                      </div>
-                      <p>
-                        {record.values.currentCategory || 'Sem categoria'} ·{' '}
-                        {record.values.position || 'Sem posição'}
-                      </p>
-                      <div className="athlete-card-meta">
-                        <span className="age-chip">{getAthleteAgeLabel(record)}</span>
-                        <span>{record.values.phone || 'Sem telefone'}</span>
-                      </div>
-                    </button>
-                  )
-                })
-              ) : (
-                <div className="empty-state compact">
-                  <strong>Nenhum atleta encontrado</strong>
-                  <p>Importe um CSV ou ajuste a busca para ver resultados.</p>
-                </div>
-              )}
-            </div>
-          </aside>
-
-          <section className="detail-panel">
-            <div className="panel-header sticky">
-              <div>
-                <p className="panel-kicker">Ficha completa</p>
-                <h2>{panelTitle}</h2>
-              </div>
-              <div className="panel-actions">
-                {selectedRecord ? (
-                  <>
-                    <button className="secondary-button" type="button" onClick={handleEditAthlete}>
-                      Editar
-                    </button>
-                    <button className="danger-button" type="button" onClick={handleDeleteAthlete}>
-                      Excluir
-                    </button>
-                  </>
-                ) : null}
-              </div>
-            </div>
-
-            {selectedRecord ? (
-              <>
-                <section className="summary-card">
-                  <div>
-                    <span className="summary-label">Idade</span>
-                    <strong>{getAthleteAgeLabel(selectedRecord)}</strong>
-                  </div>
-                  <div>
-                    <span className="summary-label">Equipe</span>
-                    <strong>{selectedRecord.values.currentTeam || 'Não informado'}</strong>
-                  </div>
-                  <div>
-                    <span className="summary-label">Posição</span>
-                    <strong>{selectedRecord.values.position || 'Não informado'}</strong>
-                  </div>
-                  <div>
-                    <span className="summary-label">Última atualização</span>
-                    <strong>{formatDateTime(selectedRecord.updatedAt)}</strong>
-                  </div>
-                  <div>
-                    <span className="summary-label">Origem</span>
-                    <strong>
-                      {selectedRecord.source === 'csv' ? 'Importado via CSV' : 'Cadastro manual'}
-                    </strong>
-                  </div>
-                </section>
-
-                <div className="sections-stack">
-                  {athleteSections.map((section) => {
-                    const sectionFields = sectionFieldsMap.get(section.key) ?? []
-                    return (
-                      <article className="section-card" key={section.key}>
-                        <div className="section-header">
-                          <div>
-                            <h3>{section.title}</h3>
-                            <p>{section.description}</p>
-                          </div>
-                        </div>
-                        <div className="field-grid readonly-grid">
-                          {sectionFields.map((field) => (
-                            <div className="field-display" key={field.key}>
-                              <span>{field.label}</span>
-                              <strong>{getFieldDisplayValue(field, selectedRecord)}</strong>
-                            </div>
-                          ))}
-                        </div>
-                      </article>
-                    )
-                  })}
-                </div>
-              </>
-            ) : (
-              <div className="empty-state">
-                <strong>Sem ficha aberta</strong>
-                <p>
-                  Use <em>Novo atleta</em> para cadastrar manualmente ou importe o CSV das
-                  respostas do formulário.
-                </p>
-              </div>
-            )}
-          </section>
-        </main>
-      </div>
-
-      {isWizardMode ? (
-        <div className="modal-overlay" role="presentation" onClick={handleCloseWizard}>
-          <section
-            aria-modal="true"
-            role="dialog"
-            aria-labelledby="wizard-modal-title"
-            className="wizard-modal"
-            onClick={(event) => event.stopPropagation()}
+        </nav>
+        <div className="flex flex-wrap items-center gap-3 md:justify-self-end">
+          <p className="m-0 hidden truncate text-xs text-brand-soft sm:block">{usuario?.email ?? 'Conectado ao banco'}</p>
+          <a className="text-xs font-bold text-accent underline-offset-4 hover:underline" href="/">
+            Ver landing page
+          </a>
+          <button
+            type="button"
+            onClick={sair}
+            className="cursor-pointer rounded-md border border-white/25 px-3 py-2 text-xs font-bold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
           >
-            <header className="wizard-modal-header">
-              <div>
-                <p className="panel-kicker">
-                  {mode === 'create' ? 'Novo cadastro' : 'Editar cadastro'} · Etapa{' '}
-                  {wizardStep + 1}/{totalSteps}
-                </p>
-                <h2 id="wizard-modal-title">
-                  {mode === 'create'
-                    ? 'Cadastro manual do atleta'
-                    : `Editando ${draft.values.fullName || 'atleta'}`}
-                </h2>
-              </div>
-              <button className="ghost-button modal-close-button" type="button" onClick={handleCloseWizard}>
-                Fechar
-              </button>
-            </header>
+            Sair
+          </button>
+        </div>
+      </header>
 
-            <div className="wizard-layout modal-wizard-layout">
-              <section className="wizard-summary-card">
-                <div>
-                  <span className="summary-label">Nome</span>
-                  <strong>{draft.values.fullName || 'Ainda não informado'}</strong>
-                </div>
-                <div>
-                  <span className="summary-label">Idade</span>
-                  <strong>{draft.values.age || '—'}</strong>
-                </div>
-                <div>
-                  <span className="summary-label">Categoria</span>
-                  <strong>{draft.values.currentCategory || '—'}</strong>
-                </div>
-                <div>
-                  <span className="summary-label">Posição</span>
-                  <strong>{draft.values.position || '—'}</strong>
-                </div>
-              </section>
+      <section className="mt-5 flex flex-col gap-6 rounded-[18px] border bg-card p-5 shadow-sm md:flex-row md:items-start md:justify-between md:p-7">
+        <div>
+          <h1 className="font-display text-[clamp(2rem,3.5vw,3.4rem)] leading-[1.05]">Jogadores e anamnese</h1>
+          <p className="mt-4 max-w-[800px] text-muted-foreground">
+            Consulte a base de atletas do CTGV, marque quem aparece no site e abra a ficha
+            completa de cada jogador.
+          </p>
+        </div>
+      </section>
 
-              <nav className="wizard-steps" aria-label="Etapas do cadastro">
-                {athleteSections.map((section, index) => {
-                  const progress = getSectionProgress(section.key, draft.values)
-                  const status = getSectionStatus(index, wizardStep, draft.values)
-                  return (
-                    <button
-                      key={section.key}
-                      type="button"
-                      className={`wizard-step wizard-step-${status}`}
-                      onClick={() => handleSelectWizardStep(index)}
-                    >
-                      <span className="wizard-step-index">{index + 1}</span>
-                      <span className="wizard-step-copy">
-                        <strong>{section.title}</strong>
-                        <small>
-                          {progress.filled}/{progress.total} campos preenchidos
-                        </small>
-                      </span>
-                    </button>
-                  )
-                })}
-              </nav>
+      <section className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <article className="rounded-[20px] border border-primary/25 bg-secondary p-5 shadow-sm">
+          <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            Total de atletas
+          </span>
+          <strong className="mt-2.5 block text-3xl">{totalAtletas}</strong>
+          <p className="text-sm text-muted-foreground">Base do banco, entre todas as fichas importadas.</p>
+        </article>
+        <article className="rounded-[20px] border bg-card p-5 shadow-sm">
+          <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            Com dor atual
+          </span>
+          <strong className="mt-2.5 block text-3xl">{totalComDor}</strong>
+          <p className="text-sm text-muted-foreground">Ajuda a priorizar avaliações e acompanhamentos.</p>
+        </article>
+        <article className="rounded-[20px] border bg-card p-5 shadow-sm">
+          <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            Categorias ativas
+          </span>
+          <strong className="mt-2.5 block text-3xl">{totalCategorias}</strong>
+          <p className="text-sm text-muted-foreground">Resumo rápido das turmas já registradas.</p>
+        </article>
+      </section>
 
-              <article className="section-card wizard-card">
-                <div className="section-header wizard-header">
-                  <div>
-                    <p className="panel-kicker">Etapa {wizardStep + 1}</p>
-                    <h3>{currentSection.title}</h3>
-                    <p>{currentSection.description}</p>
-                  </div>
-                  <div className="wizard-progress-chip">
-                    {Math.round(((wizardStep + 1) / totalSteps) * 100)}% concluído
-                  </div>
-                </div>
-
-                <div className="wizard-progress-bar" aria-hidden="true">
-                  <span style={{ width: `${((wizardStep + 1) / totalSteps) * 100}%` }}></span>
-                </div>
-
-                {currentStepErrors.length ? (
-                  <div className="wizard-warning">
-                    Para avançar, preencha o campo obrigatório desta etapa.
-                  </div>
-                ) : null}
-
-                <div className="field-grid wizard-field-grid">
-                  {currentStepFields.map((field) => {
-                    const value = draft.values[field.key] || ''
-                    const isAgeAutoField = field.key === 'age' && Boolean(draft.values.birthDate)
-                    const isRequired = currentStepErrors.includes(field.key)
-
-                    return (
-                      <label
-                        className={`field-control ${field.type === 'textarea' ? 'full-width' : ''} ${isRequired ? 'field-control-required' : ''}`}
-                        key={field.key}
-                      >
-                        <span>{field.label}</span>
-                        {field.type === 'textarea' ? (
-                          <textarea
-                            rows={5}
-                            value={value}
-                            placeholder={field.placeholder}
-                            onChange={(event) => handleFieldChange(field, event.target.value)}
-                          />
-                        ) : field.type === 'select' ? (
-                          <select
-                            value={value}
-                            onChange={(event) => handleFieldChange(field, event.target.value)}
-                          >
-                            <option value="">Selecione</option>
-                            {field.options?.map((option) => (
-                              <option key={option} value={option}>
-                                {option}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          <input
-                            type={field.type}
-                            value={value}
-                            placeholder={field.placeholder}
-                            readOnly={isAgeAutoField}
-                            onChange={(event) => handleFieldChange(field, event.target.value)}
-                          />
-                        )}
-                        {field.helperText ? <small>{field.helperText}</small> : null}
-                        {isAgeAutoField ? (
-                          <small>Idade calculada automaticamente a partir da data.</small>
-                        ) : null}
-                      </label>
-                    )
-                  })}
-                </div>
-
-                <footer className="wizard-footer">
-                  <button
-                    className="ghost-button"
-                    type="button"
-                    onClick={handlePreviousStep}
-                    disabled={wizardStep === 0}
-                  >
-                    Voltar etapa
-                  </button>
-                  <div className="wizard-footer-actions">
-                    <button className="secondary-button" type="button" onClick={handleSaveAthlete}>
-                      Salvar agora
-                    </button>
-                    {!isLastStep ? (
-                      <button className="primary-button" type="button" onClick={handleNextStep}>
-                        Próxima etapa
-                      </button>
-                    ) : (
-                      <button className="primary-button" type="button" onClick={handleSaveAthlete}>
-                        Finalizar cadastro
-                      </button>
-                    )}
-                  </div>
-                </footer>
-              </article>
-            </div>
-          </section>
+      {lista.isError ? (
+        <div className="mt-4 rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-red-700">
+          {lista.error instanceof Error ? lista.error.message : 'Falha ao carregar atletas.'}
         </div>
       ) : null}
-    </>
+
+      <main className="mt-5 rounded-3xl border bg-card p-5 shadow-sm">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Cadastros</p>
+            <h2 className="mt-2 text-xl font-bold">Jogadores</h2>
+          </div>
+          <div className="flex w-full flex-col items-start gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+            {/* contador do lado direito, refletindo os filtros aplicados */}
+            <span className="order-first text-xs font-semibold text-muted-foreground sm:order-none">
+              {rotuloContagem}
+            </span>
+            <Input
+              type="search"
+              placeholder="Buscar por nome, categoria ou posição"
+              value={buscaInput}
+              onChange={(evento) => setBuscaInput(evento.target.value)}
+              className="w-full bg-muted sm:max-w-80"
+            />
+            <Select
+              value={posicao}
+              onValueChange={(valor) => setPosicao(valor && valor !== 'todas' ? valor : '')}
+            >
+              <SelectTrigger className="w-full bg-muted sm:w-44">
+                <SelectValue placeholder="Todas as posições" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todas">Todas as posições</SelectItem>
+                {opcoesPosicao.map((opcao) => (
+                  <SelectItem key={opcao} value={opcao}>
+                    {opcao}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={categoria}
+              onValueChange={(valor) => setCategoria(valor && valor !== 'todas' ? valor : '')}
+            >
+              <SelectTrigger className="w-full bg-muted sm:w-44">
+                <SelectValue placeholder="Todas as categorias" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todas">Todas as categorias</SelectItem>
+                {opcoesCategoria.map((opcao) => (
+                  <SelectItem key={opcao} value={opcao}>
+                    {opcao}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="mt-4 flex max-h-[calc(100vh-280px)] flex-col gap-3 overflow-auto pr-1 max-md:max-h-none">
+          {lista.isPending ? (
+            <div className="flex items-center justify-center gap-3 rounded-[18px] border bg-card p-8 text-muted-foreground">
+              <Spinner />
+              <span className="text-sm">Carregando atletas…</span>
+            </div>
+          ) : atletas.length ? (
+            atletas.map((atleta) => (
+              <div
+                key={atleta.id}
+                role="button"
+                tabIndex={0}
+                className="cursor-pointer rounded-[18px] border bg-card p-4 text-left transition-transform hover:-translate-y-px hover:shadow-sm focus-visible:outline-2 focus-visible:outline-ring"
+                onClick={() => window.location.assign(`/admin/atletas/${atleta.id}`)}
+                onKeyDown={(evento) => {
+                  if (evento.key === 'Enter') {
+                    window.location.assign(`/admin/atletas/${atleta.id}`)
+                  }
+                }}
+              >
+                <div className="mb-2.5 flex items-center justify-between gap-3">
+                  <strong className="text-base">{atleta.nomeCompleto}</strong>
+                  <div className="flex flex-shrink-0 items-center gap-3">
+                    {atleta.temDorAtual === true ? (
+                      <Badge variant="outline" className="border-amber-300 bg-amber-50 text-amber-800">
+                        Dor atual
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-muted-foreground">
+                        Sem dor atual
+                      </Badge>
+                    )}
+                    {/* curadoria: stopPropagation para o clique não abrir a ficha */}
+                    <label
+                      className="inline-flex cursor-pointer items-center gap-2 text-xs font-bold text-muted-foreground select-none"
+                      onClick={(evento) => evento.stopPropagation()}
+                      onKeyDown={(evento) => evento.stopPropagation()}
+                    >
+                      <Switch
+                        checked={atleta.exibeNoSite}
+                        disabled={curadoria.isPending}
+                        onCheckedChange={(marcado) => alternarExibicao(atleta.id, marcado)}
+                      />
+                      No site
+                    </label>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {atleta.categoriaAtual || 'Sem categoria'} · {atleta.posicao || 'Sem posição'} ·{' '}
+                  {atleta.equipeAtual || 'Sem equipe'}
+                </p>
+                <div className="mt-2.5 flex flex-wrap items-center gap-2.5 text-[0.82rem] text-muted-foreground">
+                  <span className="inline-flex rounded-full bg-secondary px-2.5 py-0.5 text-xs font-extrabold text-secondary-foreground">
+                    {atleta.idade ? `${atleta.idade} anos` : 'Idade não informada'}
+                  </span>
+                  <span>{atleta.telefone || 'Sem telefone'}</span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="rounded-[18px] border bg-card p-6 text-center">
+              <strong className="block">Nenhum atleta encontrado</strong>
+              <p className="mt-1 text-sm text-muted-foreground">Ajuste a busca ou o filtro de posição.</p>
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
   )
 }

@@ -21,6 +21,7 @@ function parseConsulta(req: Request) {
   return {
     q: resultado.data.q || undefined,
     posicao: resultado.data.posicao || undefined,
+    categoria: resultado.data.categoria || undefined,
   }
 }
 

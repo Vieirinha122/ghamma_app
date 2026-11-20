@@ -24,4 +24,12 @@ export default defineConfig([
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     },
   },
+  {
+    // Componentes shadcn/ui exportam variants junto com o componente por padrão
+    // do projeto — exceção aceita para a regra de fast refresh.
+    files: ['src/components/ui/**'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])

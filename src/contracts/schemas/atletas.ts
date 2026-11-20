@@ -8,6 +8,7 @@ import { z } from 'zod'
 export const schemaConsultaAtletas = z.object({
   q: z.string().trim().max(80, 'Busca com no máximo 80 caracteres').optional(),
   posicao: z.string().trim().max(40).optional(),
+  categoria: z.string().trim().max(40).optional(),
 })
 
 export type ConsultaAtletas = z.infer<typeof schemaConsultaAtletas>
