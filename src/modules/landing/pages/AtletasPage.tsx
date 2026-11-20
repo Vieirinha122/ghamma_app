@@ -12,6 +12,7 @@ import {
 import { useDebounce } from '@/hooks/useDebounce'
 import { athleteFields } from '@/modules/ficha/data/formSchema'
 import { CabecalhoPublico } from '../components/CabecalhoPublico'
+import { AtletaCardPublico } from '../components/AtletaCardPublico'
 import { useAtletasPublicos } from '../hooks/useAtletasPublicos'
 
 const opcoesPosicao =
@@ -34,7 +35,7 @@ export function AtletasPage() {
     <div className="min-h-svh bg-white pb-24 pt-20 text-brand-ink">
       <CabecalhoPublico />
 
-      <section className="pt-16">
+      <section className="pt-12 sm:pt-16">
         <div className="mx-auto w-[min(calc(100%-40px),1180px)]">
           <span className="mb-3 block h-1.5 w-12 -skew-x-[18deg] rounded-sm bg-lp-magenta" aria-hidden="true" />
           <h1 className="font-display text-[clamp(2.6rem,5vw,4rem)] font-black uppercase leading-[0.95] tracking-[-0.02em]">
@@ -44,7 +45,7 @@ export function AtletasPage() {
             Quem treina, compete e veste a camisa toda semana.
           </p>
 
-          <div className="mt-10 flex w-full flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="mt-8 flex w-full flex-col gap-2.5 sm:mt-10 sm:flex-row sm:flex-wrap sm:items-center">
             <Input
               type="search"
               placeholder="Buscar atleta"
@@ -75,27 +76,14 @@ export function AtletasPage() {
               Não foi possível carregar os atletas agora. Tente de novo em instantes.
             </p>
           ) : (
-            <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="mt-8 grid grid-cols-1 gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
               {lista.isPending ? (
                 Array.from({ length: 8 }).map((_, indice) => (
-                  <div key={indice} className="h-28 animate-pulse rounded-[18px] border bg-[#f4f1f7]" />
+                  <div key={indice} className="h-20 animate-pulse rounded-2xl border bg-[#f4f1f7] sm:h-28" />
                 ))
               ) : atletas.length ? (
                 atletas.map((atleta) => (
-                  <article
-                    key={atleta.id}
-                    className="rounded-[18px] border border-[#ded6e5] bg-lp-paper p-5 shadow-sm transition-all hover:-translate-y-px hover:border-primary/50 hover:shadow-md"
-                  >
-                    <strong className="block text-xl font-extrabold tracking-tight">{atleta.nomeResumido}</strong>
-                    <div className="mt-3 flex flex-wrap items-center gap-2">
-                      <span className="inline-flex rounded-full bg-purple-100 px-2.5 py-1 text-xs font-extrabold text-primary">
-                        {atleta.idade ? `${atleta.idade} anos` : 'Idade não informada'}
-                      </span>
-                      <span className="inline-flex rounded-full border border-[#ded6e5] bg-white px-2.5 py-1 text-xs font-bold text-[#6a6074]">
-                        {atleta.posicao || 'Posição livre'}
-                      </span>
-                    </div>
-                  </article>
+                  <AtletaCardPublico key={atleta.id} atleta={atleta} />
                 ))
               ) : (
                 <p className="col-span-full rounded-[18px] border bg-lp-paper p-6 text-center text-sm text-[#6a6074]">

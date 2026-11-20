@@ -25,7 +25,7 @@ export function GaleriaPage() {
     <div className="min-h-svh bg-brand-ink pb-24 pt-20 text-white">
       <CabecalhoPublico />
 
-      <section className="pt-16">
+      <section className="pt-12 sm:pt-16">
         <div className="mx-auto w-[min(calc(100%-40px),1180px)]">
           <span className="mb-3 block h-1.5 w-12 -skew-x-[18deg] rounded-sm bg-lp-magenta" aria-hidden="true" />
           <h1 className="font-display text-[clamp(2.6rem,5vw,4rem)] font-black uppercase leading-[0.95] tracking-[-0.02em]">
@@ -36,9 +36,9 @@ export function GaleriaPage() {
           </p>
 
           {/* masonry: fotos de alturas diferentes fluem sem cortes */}
-          <div className="mt-12 columns-1 gap-4 sm:columns-2 lg:columns-3">
+          <div className="mt-10 columns-2 gap-2.5 sm:mt-12 sm:gap-4 lg:columns-3">
             {FOTOS.map((foto) => (
-              <figure key={foto.src} className="mb-4 break-inside-avoid">
+              <figure key={foto.src} className="mb-2.5 break-inside-avoid sm:mb-4">
                 <img
                   src={foto.src}
                   alt={foto.alt}

@@ -1,6 +1,7 @@
 // Teaser do elenco na landing: 6 cards de amostra. A lista completa com
 // busca e filtro mora na rota /atletas (divulgação progressiva).
 import { useBasePublica } from '../hooks/useAtletasPublicos'
+import { AtletaCardPublico } from './AtletaCardPublico'
 
 export function AtletasTeaser() {
   const base = useBasePublica()
@@ -12,7 +13,7 @@ export function AtletasTeaser() {
   }
 
   return (
-    <section className="border-t border-[#ddd5e4]/70 bg-white py-24 text-brand-ink">
+    <section className="border-t border-[#ddd5e4]/70 bg-white py-16 text-brand-ink sm:py-20 lg:py-24">
       <div className="mx-auto w-[min(calc(100%-40px),1180px)]">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
@@ -32,22 +33,9 @@ export function AtletasTeaser() {
           </a>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid grid-cols-1 gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {atletas.map((atleta) => (
-            <article
-              key={atleta.id}
-              className="rounded-[18px] border border-[#ded6e5] bg-lp-paper p-5 shadow-sm transition-all hover:-translate-y-px hover:border-primary/50 hover:shadow-md"
-            >
-              <strong className="block text-xl font-extrabold tracking-tight">{atleta.nomeResumido}</strong>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="inline-flex rounded-full bg-purple-100 px-2.5 py-1 text-xs font-extrabold text-primary">
-                  {atleta.idade ? `${atleta.idade} anos` : 'Idade não informada'}
-                </span>
-                <span className="inline-flex rounded-full border border-[#ded6e5] bg-white px-2.5 py-1 text-xs font-bold text-[#6a6074]">
-                  {atleta.posicao || 'Posição livre'}
-                </span>
-              </div>
-            </article>
+            <AtletaCardPublico key={atleta.id} atleta={atleta} />
           ))}
         </div>
       </div>

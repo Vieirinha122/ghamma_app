@@ -5,7 +5,7 @@ const AMOSTRA = [1, 2, 3, 4].map((n) => `/galeria/galeria-0${n}.jpg`)
 
 export function GaleriaTeaser() {
   return (
-    <section className="relative overflow-hidden bg-brand-ink py-24 text-white">
+    <section className="relative overflow-hidden bg-brand-ink py-16 text-white sm:py-20 lg:py-24">
       <div className="relative z-10 mx-auto w-[min(calc(100%-40px),1180px)]">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
@@ -25,12 +25,14 @@ export function GaleriaTeaser() {
           </a>
         </div>
 
-        <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-4 md:grid-cols-4">
           {AMOSTRA.map((src, indice) => (
             <a key={src} href="/galeria" className="group block overflow-hidden rounded-2xl border border-white/10">
               <img
                 src={src}
                 alt={`Bastidores do CT Ghamma Volley — foto ${indice + 1}`}
+                width={indice === 3 ? 1600 : 1200}
+                height={indice === 3 ? 1200 : 1600}
                 loading="lazy"
                 decoding="async"
                 className="aspect-[4/5] w-full object-cover transition-transform duration-300 group-hover:scale-105"

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const links = [
   ['Metodologia', '/#metodologia'],
@@ -10,7 +10,27 @@ const links = [
 
 export function CabecalhoPublico() {
   const [menuAberto, setMenuAberto] = useState(false)
+  const botaoFecharRef = useRef<HTMLButtonElement>(null)
   const linkBase = 'text-sm font-bold text-white! transition-colors hover:text-[#ee86f4]!'
+
+  useEffect(() => {
+    if (!menuAberto) return
+
+    const overflowAnterior = document.documentElement.style.overflow
+    document.documentElement.style.overflow = 'hidden'
+    botaoFecharRef.current?.focus()
+
+    const fecharComEscape = (evento: KeyboardEvent) => {
+      if (evento.key === 'Escape') setMenuAberto(false)
+    }
+
+    window.addEventListener('keydown', fecharComEscape)
+
+    return () => {
+      document.documentElement.style.overflow = overflowAnterior
+      window.removeEventListener('keydown', fecharComEscape)
+    }
+  }, [menuAberto])
 
   return (
     <header className="fixed inset-x-0 top-0 z-30 border-b border-white/10 bg-[rgba(8,4,38,0.96)]">
@@ -36,7 +56,7 @@ export function CabecalhoPublico() {
         <div className="flex items-center gap-3">
           <a
             href="/#contato"
-            className="hidden rounded-xl bg-lp-cyan px-5 py-2.5 text-sm font-extrabold text-brand-ink transition-all hover:brightness-110 active:scale-95 sm:inline-flex"
+            className="hidden rounded-xl bg-lp-cyan px-5 py-2.5 text-sm font-extrabold text-brand-ink transition-[filter,transform] hover:brightness-110 active:scale-95 sm:inline-flex"
           >
             Aula experimental
           </a>
@@ -55,12 +75,15 @@ export function CabecalhoPublico() {
       </div>
 
       {menuAberto ? (
-        <div className="fixed inset-0 z-40 bg-[rgba(4,2,20,0.98)] md:hidden" role="dialog" aria-modal="true">
-          <div className="flex h-20 items-center justify-between px-6">
-            <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#cfc4d8]">Menu</span>
+        <div className="fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-[rgba(4,2,20,0.98)] pb-[env(safe-area-inset-bottom)] md:hidden" role="dialog" aria-modal="true" aria-label="Menu principal">
+          <div className="flex h-20 items-center justify-between border-b border-white/10 px-5 pt-[env(safe-area-inset-top)]">
+            <a className="flex items-center" href="/#inicio" aria-label="Ghamma Volley — início" onClick={() => setMenuAberto(false)}>
+              <img src="/ghamma-logo.webp" alt="" width="1212" height="1073" className="h-14 w-auto" />
+            </a>
             <button
+              ref={botaoFecharRef}
               type="button"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/25 text-white"
+              className="inline-flex h-11 w-11 touch-manipulation items-center justify-center rounded-xl border border-white/25 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lp-cyan"
               aria-label="Fechar menu"
               onClick={() => setMenuAberto(false)}
             >
@@ -70,11 +93,11 @@ export function CabecalhoPublico() {
             </button>
           </div>
 
-          <nav className="flex flex-col gap-2 px-6 pt-6" aria-label="Navegação principal (menu)">
+          <nav className="flex flex-col px-5 pt-5" aria-label="Navegação principal (menu)">
             {links.map(([rotulo, destino]) => (
               <a
                 key={destino}
-                className="border-b border-white/10 py-4 font-display text-3xl font-black uppercase text-white! transition-colors hover:text-lp-cyan!"
+                className="flex min-h-14 touch-manipulation items-center border-b border-white/10 py-3 font-display text-[1.7rem] font-black uppercase leading-none text-white! transition-colors hover:text-lp-cyan! focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-lp-cyan"
                 href={destino}
                 onClick={() => setMenuAberto(false)}
               >
@@ -83,11 +106,11 @@ export function CabecalhoPublico() {
             ))}
           </nav>
 
-          <div className="px-6 pt-8">
+          <div className="px-5 pb-8 pt-7">
             <a
               href="/#contato"
               onClick={() => setMenuAberto(false)}
-              className="flex items-center justify-center rounded-xl bg-lp-cyan px-5 py-4 font-extrabold text-brand-ink"
+              className="flex min-h-14 touch-manipulation items-center justify-center rounded-xl bg-lp-cyan px-5 py-4 font-extrabold text-brand-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
               Aula experimental
             </a>

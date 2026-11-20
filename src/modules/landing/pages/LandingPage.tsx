@@ -142,7 +142,7 @@ function Metodologia() {
   ]
 
   return (
-    <section id="metodologia" className="bg-lp-paper py-24 text-brand-ink">
+    <section id="metodologia" className="scroll-mt-20 bg-lp-paper py-16 text-brand-ink sm:py-20 lg:py-24">
       <div className="mx-auto w-[min(calc(100%-40px),1180px)]">
         <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
           <div className="lg:sticky lg:top-32 lg:col-span-5">
@@ -208,9 +208,9 @@ function Evolucao() {
   ]
 
   return (
-    <section id="evolucao" className="relative overflow-hidden bg-[radial-gradient(circle_at_100%_25%,rgba(195,49,210,0.12),transparent_25%),radial-gradient(circle_at_0%_75%,rgba(0,199,208,0.12),transparent_25%),linear-gradient(180deg,#180a33,#0c051d)] py-24 text-white">
+    <section id="evolucao" className="relative scroll-mt-20 overflow-hidden bg-[radial-gradient(circle_at_100%_25%,rgba(195,49,210,0.12),transparent_25%),radial-gradient(circle_at_0%_75%,rgba(0,199,208,0.12),transparent_25%),linear-gradient(180deg,#180a33,#0c051d)] py-16 text-white sm:py-20 lg:py-24">
       <div className="relative z-10 mx-auto w-[min(calc(100%-40px),1180px)]">
-        <div className="mx-auto mb-20 max-w-3xl text-center">
+        <div className="mx-auto mb-12 max-w-3xl text-center md:mb-20">
           <div className="mb-4 flex justify-center">{barraMagenta}</div>
           <h2 className="mb-4 font-display text-[clamp(2.6rem,5vw,4rem)] font-black uppercase leading-[1.02] tracking-[-0.02em]">
             Da primeira manchete ao jogo valendo.
@@ -223,14 +223,18 @@ function Evolucao() {
         <div className="relative">
           {/* linha da timeline (desktop) */}
           <div
-            className="absolute left-[15%] right-[15%] top-10 hidden h-1 rounded-full bg-[linear-gradient(90deg,#00c7d0,#c331d2,#ffffff)] opacity-70 md:block"
+            className="absolute left-[15%] right-[15%] top-[38px] hidden h-1 rounded-full bg-[linear-gradient(90deg,#00c7d0,#c331d2,#ffffff)] opacity-70 md:block"
             aria-hidden="true"
           />
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
+          <div
+            className="absolute bottom-7 left-7 top-7 w-1 rounded-full bg-[linear-gradient(180deg,#00c7d0,#c331d2,#ffffff)] opacity-70 md:hidden"
+            aria-hidden="true"
+          />
+          <div className="grid grid-cols-1 gap-9 md:grid-cols-3 md:gap-10">
             {etapas.map((etapa) => (
-              <div key={etapa.numero} className="group relative flex flex-col items-center text-center">
+              <div key={etapa.numero} className="group relative grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-4 text-left md:flex md:flex-col md:items-center md:gap-0 md:text-center">
                 <div
-                  className={`z-10 mb-6 flex h-20 w-20 items-center justify-center rounded-full font-display text-2xl font-black transition-transform group-hover:scale-110 ${etapa.circulo} ${
+                  className={`z-10 flex h-14 w-14 items-center justify-center rounded-full font-display text-xl font-black transition-transform group-hover:scale-105 md:mb-6 md:h-20 md:w-20 md:text-2xl md:group-hover:scale-110 ${etapa.circulo} ${
                     etapa.numero === '1'
                       ? 'shadow-[0_0_30px_rgba(0,199,208,0.35)]'
                       : etapa.numero === '2'
@@ -240,11 +244,13 @@ function Evolucao() {
                 >
                   {etapa.numero}
                 </div>
-                <span className={`mb-2 text-xs font-bold uppercase tracking-wider ${etapa.numero === '3' ? 'text-cyan-300' : etapa.numero === '2' ? 'text-lp-magenta' : 'text-lp-cyan'}`}>
-                  {etapa.fase}
-                </span>
-                <h3 className="mb-3 text-2xl font-bold">{etapa.titulo}</h3>
-                <p className="max-w-xs text-sm leading-relaxed text-gray-300">{etapa.texto}</p>
+                <div className="pt-0.5 md:pt-0">
+                  <span className={`mb-2 block text-xs font-bold uppercase tracking-wider ${etapa.numero === '3' ? 'text-cyan-300' : etapa.numero === '2' ? 'text-lp-magenta' : 'text-lp-cyan'}`}>
+                    {etapa.fase}
+                  </span>
+                  <h3 className="mb-2 text-xl font-bold md:mb-3 md:text-2xl">{etapa.titulo}</h3>
+                  <p className="max-w-xs text-sm leading-relaxed text-gray-300">{etapa.texto}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -276,7 +282,7 @@ function Publico() {
   ]
 
   return (
-    <section className="bg-lp-paper py-24 text-brand-ink">
+    <section className="bg-lp-paper py-16 text-brand-ink sm:py-20 lg:py-24">
       <div className="mx-auto w-[min(calc(100%-40px),1180px)]">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
           <div className="lg:col-span-5">
@@ -349,7 +355,7 @@ function ContatoWhatsApp() {
   ]
 
   return (
-    <section id="contato" className="relative overflow-hidden bg-[radial-gradient(circle_at_100%_10%,rgba(0,199,208,0.1),transparent_28%),linear-gradient(135deg,#12062e,#210947_60%,#0a031c)] py-24 text-white">
+    <section id="contato" className="relative scroll-mt-20 overflow-hidden bg-[radial-gradient(circle_at_100%_10%,rgba(0,199,208,0.1),transparent_28%),linear-gradient(135deg,#12062e,#210947_60%,#0a031c)] py-16 text-white sm:py-20 lg:py-24">
       <div className="relative z-10 mx-auto grid w-[min(calc(100%-40px),1180px)] grid-cols-1 items-center gap-12 lg:grid-cols-2">
         {/* argumentação: por que chamar */}
         <div>
