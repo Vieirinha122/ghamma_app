@@ -51,11 +51,11 @@ function Hero() {
   return (
     <section
       id="inicio"
-      className="relative flex min-h-svh items-center overflow-hidden bg-[radial-gradient(circle_at_0%_0%,rgba(195,49,210,0.15),transparent_28%),radial-gradient(circle_at_75%_75%,rgba(0,199,208,0.1),transparent_30%),linear-gradient(125deg,#080426_0%,#26104f_55%,#00596f_100%)] pb-20 pt-32 text-white"
+      className="relative flex min-h-svh items-center overflow-hidden bg-[radial-gradient(circle_at_0%_0%,rgba(195,49,210,0.15),transparent_28%),radial-gradient(circle_at_75%_75%,rgba(0,199,208,0.1),transparent_30%),linear-gradient(125deg,#080426_0%,#26104f_55%,#00596f_100%)] pb-16 pt-24 text-white sm:pb-20 sm:pt-28 lg:pt-32"
     >
-      <div className="relative z-10 mx-auto grid w-[min(calc(100%-40px),1180px)] grid-cols-1 items-center gap-12 lg:grid-cols-12">
-        <div className="flex flex-col items-start lg:col-span-7">
-          <h1 className="mb-6 mt-6 max-w-[700px] font-display text-[clamp(3.6rem,9vw,7rem)] font-black uppercase leading-[0.82] tracking-[-0.02em]">
+      <div className="relative z-10 mx-auto grid w-[min(calc(100%-40px),1180px)] grid-cols-1 items-center gap-6 sm:gap-10 lg:grid-cols-12 lg:gap-12">
+        <div className="order-2 flex flex-col items-start lg:order-1 lg:col-span-7">
+          <h1 className="mb-6 mt-2 max-w-[700px] font-display text-[clamp(3.6rem,9vw,7rem)] font-black uppercase leading-[0.82] tracking-[-0.02em] sm:mt-6">
             Aqui, cada bola importa.
             {/* risco magenta inclinado (assinatura visual do herói) */}
             <span className="mt-[0.16em] block h-[0.13em] w-[58%] -skew-x-[18deg] bg-lp-magenta" aria-hidden="true" />
@@ -85,15 +85,15 @@ function Hero() {
           </div>
         </div>
 
-        <div className="flex items-center justify-center py-12 lg:col-span-5">
-          <div className="relative flex h-[440px] w-[380px] items-center justify-center sm:w-[460px]">
+        <div className="order-1 flex min-w-0 items-center justify-center pt-3 lg:order-2 lg:col-span-5 lg:py-12">
+          <div className="relative flex h-[250px] w-full max-w-[300px] items-center justify-center sm:h-[360px] sm:max-w-[460px] lg:h-[440px] lg:w-[380px] lg:max-w-none">
             {/* anéis orbitais elípticos com glow */}
             <div
-              className="pointer-events-none absolute h-[340px] w-[460px] -rotate-12 rounded-[50%] border-2 border-lp-magenta/70 opacity-80 shadow-[0_0_30px_rgba(195,49,210,0.25)]"
+              className="pointer-events-none absolute h-[210px] w-[290px] -rotate-12 rounded-[50%] border-2 border-lp-magenta/70 opacity-80 shadow-[0_0_30px_rgba(195,49,210,0.25)] sm:h-[300px] sm:w-[410px] lg:h-[340px] lg:w-[460px]"
               aria-hidden="true"
             />
             <div
-              className="pointer-events-none absolute h-[320px] w-[440px] rotate-12 rounded-[50%] border-2 border-lp-cyan/80 opacity-90 shadow-[0_0_30px_rgba(0,199,208,0.25)]"
+              className="pointer-events-none absolute h-[200px] w-[280px] rotate-12 rounded-[50%] border-2 border-lp-cyan/80 opacity-90 shadow-[0_0_30px_rgba(0,199,208,0.25)] sm:h-[280px] sm:w-[390px] lg:h-[320px] lg:w-[440px]"
               aria-hidden="true"
             />
             {/* logo real da marca (asset fechado) */}
@@ -103,7 +103,7 @@ function Hero() {
               width="1212"
               height="1073"
               fetchPriority="high"
-              className="relative z-10 h-auto w-[min(100%,400px)] brightness-110 drop-shadow-[0_24px_28px_rgba(0,0,0,0.4)]"
+              className="relative z-10 h-auto w-[min(82%,240px)] brightness-110 drop-shadow-[0_24px_28px_rgba(0,0,0,0.4)] sm:w-[min(100%,340px)] lg:w-[min(100%,400px)]"
             />
           </div>
         </div>
