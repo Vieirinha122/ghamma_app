@@ -18,5 +18,10 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
     },
+    rules: {
+      // Convenção do projeto: parâmetro obrigatório pela assinatura mas não chamado
+      // ganha prefixo _ (ex: _next em handlers de erro do Express) e não é cobrado.
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+    },
   },
 ])
