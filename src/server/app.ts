@@ -31,6 +31,8 @@ export function criarApp() {
   app.use(morgan('tiny'))
   // Necessário para ler o cookie do refresh token nas rotas de auth
   app.use(cookieParser())
+  // Parser de JSON do corpo: sem ele req.body é undefined em POST/PATCH
+  app.use(express.json({ limit: '1mb' }))
 
   // Router principal (novos grupos entram aqui: /consultas...)
   app.use('/api', healthRouter)

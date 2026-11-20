@@ -2,6 +2,7 @@
 // Hoje lista do localStorage; a etapa de migração troca isso pela API (modules/atletas).
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
 import './AdminPanel.css'
+import { useAuth } from '../../auth/hooks/useAuth'
 import { athleteFields, athleteSections } from '../../ficha/data/formSchema'
 import type { AthleteRecord, FieldDefinition } from '../../../contracts/types'
 import {
@@ -155,6 +156,7 @@ function getSectionStatus(sectionIndex: number, currentStep: number, values: Rec
 }
 
 export function AdminPanel() {
+  const { sair } = useAuth()
   const [athletes, setAthletes] = useState<AthleteRecord[]>(() => loadStoredAthletes())
   const [selectedId, setSelectedId] = useState<string | null>(() =>
     getFirstRecordId(loadStoredAthletes()),
@@ -412,6 +414,9 @@ export function AdminPanel() {
           <div className="topbar-actions">
             <p className="storage-note">Dados salvos neste navegador</p>
             <a className="admin-site-link" href="/">Ver landing page</a>
+            <button className="ghost-button" type="button" onClick={sair}>
+              Sair
+            </button>
           </div>
         </header>
 

@@ -45,12 +45,19 @@
 > [!info] Para a etapa do front
 > Criar componente da **seção de atletas do Ghamma Vôlei** na landing: consome `GET /api/site/atletas` (público), com filtro de posição (dropdown com as posições vindas da própria lista) + campo de busca, card com nome/idade/posição.
 
-## Etapa 5 — Front: autenticação + TanStack Query
+## Etapa 5 — Front: autenticação + TanStack Query ✅ *(concluída e testada em 2026-11-20)*
 
-- [ ] Instalar `@tanstack/react-query`; provider no app
-- [ ] Tela de login `/admin/login` (RHF + Zod reaproveitando contrato)
-- [ ] Context de auth com access token em memória e refresh silencioso
-- [ ] Logout limpa memória + cookie
+- [x] Instalar `@tanstack/react-query` (+ provider no app, `retry: false` — 401 é tratado pelo wrapper de sessão), `react-hook-form` e `@hookform/resolvers`
+- [x] Tela de login `/admin/login` (RHF + Zod reaproveitando `schemaLogin` do contrato)
+- [x] Context de auth (`AuthContext` + `AuthProvider` + hook `useAuth` em arquivos separados, convenção)
+- [x] Access token em memória; renovação silenciosa no boot e em 401 com **mutex entre abas** (refresh rotativo) e `BroadcastChannel` (logout/token entre abas)
+- [x] Portão de sessão em `/admin/*` (redireciona ao login; nada sensível renderiza durante a verificação)
+- [x] Botão "Sair" no painel (revoga sessão, limpa memória e anuncia às abas)
+
+> [!info] Performance (backlog)
+> Bundle principal passou de 500 kB com query/form libs — considerar code-splitting do painel admin (`import()` dinâmico) quando a landing for prioridade de carga.
+
+## Etapa 6 — Front: tabela, ficha separada e remoção do CRUD *(próxima)*
 
 ## Etapa 6 — Front: tabela, ficha separada e remoção do CRUD
 
