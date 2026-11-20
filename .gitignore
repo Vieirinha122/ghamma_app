@@ -15,6 +15,20 @@ dist-ssr
 # Notas do vault do projeto (ficam só no Obsidian, fora do repo)
 obsidian-vault-ctgv
 
+# Segredos de ambiente (banco, JWT) — nunca versionar
+.env
+.env.*
+!.env.example
+
+# Código gerado pelo Prisma (regenera com npm run postinstall)
+generated
+
+# Skills sincronizadas pelo CLI (regeneram com prisma skills sync)
+.claude
+.windsurf
+.agents
+skills-lock.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -25,3 +39,5 @@ obsidian-vault-ctgv
 *.njsproj
 *.sln
 *.sw?
+
+/src/generated/prisma

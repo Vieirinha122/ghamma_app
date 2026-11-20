@@ -1,0 +1,16 @@
+// tsconfig exclusivo do backend: não interfere no build do front (tsconfig.app.json).
+// Serve para checagem de tipos (tsc --noEmit) e suporte do editor.
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": ["node"],
+    "lib": ["ES2022"]
+  },
+  "include": ["api/**/*.ts", "src/server/**/*.ts", "prisma.config.ts", "generated/**/*.ts"]
+}

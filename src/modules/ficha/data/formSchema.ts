@@ -1,4 +1,4 @@
-import type { FieldDefinition, SectionDefinition } from '../types'
+import type { FieldDefinition, SectionDefinition } from '../../../contracts/types'
 
 export const athleteSections: SectionDefinition[] = [
   {

@@ -1,6 +1,6 @@
 import Papa from 'papaparse'
-import { athleteFields } from '../data/formSchema'
-import type { AthleteRecord, ImportSummary } from '../types'
+import { athleteFields } from '../../ficha/data/formSchema'
+import type { AthleteRecord, ImportSummary } from '../../../contracts/types'
 import {
   applyDerivedValues,
   buildRecord,

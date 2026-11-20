@@ -1,0 +1,10 @@
+// Schema do banco — etapa 1 é só a base (datasource + generator).
+// Modelos (atleta, usuario) entram na etapa 2.
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated"
+}

@@ -1,5 +1,5 @@
-import { athleteFields } from '../data/formSchema'
-import type { AthleteRecord, FieldDefinition } from '../types'
+import { athleteFields } from '../../ficha/data/formSchema'
+import type { AthleteRecord, FieldDefinition } from '../../../contracts/types'
 
 export const STORAGE_KEY = 'ctgv-athletes-v1'
 
