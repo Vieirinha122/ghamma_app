@@ -8,6 +8,9 @@ datasource db {
 generator client {
   provider = "prisma-client"
   output   = "../generated"
+  // fixa o formato do client em CommonJS: o pacote é CJS (conserto do deploy
+  // serverless) e sem isso o Prisma infere ESM e quebra no runtime da Vercel
+  moduleFormat = "cjs"
 }
 
 // Usuário do painel (admin/fisioterapeuta). Senha só em hash (bcrypt).
